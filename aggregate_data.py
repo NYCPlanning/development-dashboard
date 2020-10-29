@@ -144,3 +144,43 @@ def load_community_district_data(boro, db):
     agg_db.cd = agg_db.cd.astype(str)
 
     return agg_db
+
+##########################
+# HNY 
+##########################
+
+def load_affordable_data(db, status):
+
+    boro_dict = {'1': 'Manhattan', '2': "Bronx", '3': "Brooklyn", '4': "Queens", '5': "Staten Island"}
+
+    conn = create_engine(db)
+
+    # connect 
+    agg_db = pd.read_sql('''
+    SELECT 
+        SUM(classa_net :: NUMERIC) as total_units_net,
+        SUM(classa_hnyaff :: NUMERIC) as total_hny_units_net,
+        job_status,
+        boro
+
+    FROM   final_devdb
+
+    WHERE
+        permit_year :: INTEGER >= 2014
+        AND job_inactive IS NULL
+
+    GROUP  BY 
+        job_status,
+        boro
+    ''', con = conn)
+
+    agg_db.boro = agg_db.boro.map(boro_dict)
+
+    df_permit = agg_db.loc[agg_db.job_status == '3. Permitted for Construction']
+
+    df_complete = agg_db.loc[agg_db.job_status == '5. Completed Construction']
+
+    return df_permit if status == 'Incomplete' else df_complete
+
+
+

@@ -4,6 +4,9 @@ import pandas as pd
 from pandas import json_normalize
 import plotly.graph_objects as go
 
+##########################
+# 
+##########################
 def citywide_choropleth(df, job_type, mapbox_token):
 
     # get the geojson needed for the mapping 
@@ -41,26 +44,29 @@ def citywide_choropleth(df, job_type, mapbox_token):
     featureidkey="properties.BoroCT2010")
 
     fig.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
-                    mapbox_zoom=10, mapbox_center = {"lat": 40.615806929667485, "lon": -73.98003930292397})
+                    mapbox_zoom=9, mapbox_center = {"lat": 40.730610, "lon": -73.935242})
 
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
     return fig
 
-def plot_bar(year_agg, job_type):
+##########################
+# Building Size Bar
+##########################
+def building_size_bar(df, job_type):
     
-    newbuild = year_agg.loc[year_agg.job_type == 'New Building']
+    newbuild = df.loc[df.job_type == 'New Building']
 
-    demo = year_agg.loc[year_agg.job_type == 'Demolition']
+    demo = df.loc[df.job_type == 'Demolition']
 
 
-    fig2 = go.Figure()
+    fig = go.Figure()
 
     if job_type == 'Demolition':
 
         for uclass in demo.units_class.unique():
 
-            fig2.add_trace(
+            fig.add_trace(
                 go.Bar(x=demo.loc[demo.units_class == uclass].year, 
                     y=demo.loc[demo.units_class == uclass].net_residential_units, 
                     name=uclass, 
@@ -71,7 +77,7 @@ def plot_bar(year_agg, job_type):
 
         for uclass in newbuild.units_class.unique():
 
-            fig2.add_trace(
+            fig.add_trace(
                 go.Bar(x=newbuild.loc[newbuild.units_class == uclass].year, 
                     y=newbuild.loc[newbuild.units_class == uclass].net_residential_units, 
                     name=uclass, 
@@ -81,19 +87,21 @@ def plot_bar(year_agg, job_type):
     else:
         for flag in alteration.units_flag.unique():
 
-            fig2.add_trace(
+            fig.add_trace(
                 go.Bar(x=alteration.loc[alteration.units_flag == flag].year, 
                     y=alteration.loc[alteration.units_flag == flag].total_classa_net, 
                 )
             )
 
     
-    fig2.update_layout(title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
+    fig.update_layout(title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
         barmode='stack', xaxis_tickangle=-45)
 
-    return fig2
+    return fig
 
-
+##########################
+# HNY 
+##########################
 
 def community_district_choropleth(agg_db, mapbox_token):
 
@@ -118,3 +126,24 @@ def community_district_choropleth(agg_db, mapbox_token):
     fig_bar_cd.update_layout(xaxis={"type":"category"})
 
     return fig_cd, fig_bar_cd
+
+##########################
+# affordable tab
+##########################
+
+def hny_bar_chart(df, status):
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(x=df.boro, y=df.total_units_net, name='Regular')
+    )
+
+    fig.add_trace(
+        go.Bar(x=df.boro, y=df.total_hny_units_net, name='HNY Units')
+    )
+
+    fig.update_layout(title='Residential Units and HNY Units in ' + status + ' Projects', 
+        barmode='group', xaxis_tickangle=-45)
+
+    return fig 
