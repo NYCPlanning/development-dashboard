@@ -13,23 +13,25 @@ import os
 # for local testing with .env file
 from dotenv import load_dotenv, find_dotenv
 
+
 from aggregate_data import load_community_district_data
 from aggregate_data import load_affordable_data
+from aggregate_data import load_building_size_data
+from aggregate_data import load_num_dev_res_units_data
+from aggregate_data import load_net_effects_data
 
 
 from plot_figure import citywide_choropleth
 from plot_figure import community_district_choropleth
 from plot_figure import building_size_bar
 from plot_figure import hny_bar_chart
-
-
-from aggregate_data import load_bar_units_agg
-from aggregate_data import load_num_dev_res_units_data
+from plot_figure import net_bar_chart
 
 
 from tabs.cumulative_production import create_cumulative_production_tab
 from tabs.affordable_housing import create_affordable_housing_tab
 from tabs.building_size import create_building_size_tab
+from tabs.net_effects import create_net_effects_tab
 
 # get the enviromental variable in local testing 
 load_dotenv(find_dotenv())
@@ -64,9 +66,9 @@ headers = create_headers()
 ######################
 # Tabs 
 ########################
-citywide_content = create_cumulative_production_tab()
+cumulative_content = create_cumulative_production_tab()
 
-borough_content = dbc.Card(
+pipeline_content = dbc.Card(
     dbc.CardBody(
         [
             html.Div(
@@ -103,9 +105,10 @@ affordable_content = create_affordable_housing_tab()
 
 building_size_content = create_building_size_tab()
 
-######### 
+net_effects_content = create_net_effects_tab()
+#################### 
 # dcc tabs 
-#########
+####################
 
 tabs_styles = {
     'height': '44px'
@@ -132,33 +135,27 @@ app.layout = html.Div([
         dcc.Tab(label='Pipeline', value='tab-pipeline', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Affordable Housing', value='tab-affordable', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Building Size', value='tab-size', style=tab_style, selected_style=tab_selected_style),
-        dcc.Tab(label='Alteration Effects', value='tab-alteration', style=tab_style, selected_style=tab_selected_style)
+        dcc.Tab(label='Net Effects', value='tab-net-effects', style=tab_style, selected_style=tab_selected_style)
     ], style=tabs_styles),
     html.Div(id='tabs-content')
 ])
 
-@app.callback(Output('tabs-content', 'children'),
-              [Input('tabs-main', 'value')])
+@app.callback(Output('tabs-content', 'children'), [Input('tabs-main', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
-        return citywide_content
+        return cumulative_content
     elif tab == 'tab-pipeline':
-        return borough_content
+        return pipeline_content
     elif tab == 'tab-affordable':
         return affordable_content
     elif tab == 'tab-size':
         return building_size_content
-    elif tab == 'tab-alteration':
-        return html.Div([
-            html.H3('Tab content alteration')
-        ])
+    elif tab == 'tab-net-effects':
+        return net_effects_content
 
 
-@app.callback(
-    Output('choro-graphic', 'figure'),
-    [Input('job-type-dropdown', 'value'),
-    Input('year-slider', 'value')]
-)
+@app.callback(Output('choro-graphic', 'figure'),
+    [Input('job-type-dropdown', 'value'), Input('year-slider', 'value')])
 def update_citywide_graphic(job_type, year):
     
     df = load_num_dev_res_units_data(database, year, job_type)
@@ -182,10 +179,7 @@ def update_community_district_graphic(boro, year):
     return choro, bar
 
 
-@app.callback(
-    Output('affordable-graphic', 'figure'),
-    [Input('status-radio', 'value')]
-)
+@app.callback(Output('affordable-graphic', 'figure'), [Input('status-radio', 'value')])
 def update_affordable_graphic(status):
 
     df = load_affordable_data(database, status)
@@ -194,15 +188,21 @@ def update_affordable_graphic(status):
 
     return fig
 
-@app.callback(
-    Output('building-size-graphic', 'figure'),
-    [Input('job-type-dropdown-2', 'value')]
-)
+@app.callback(Output('building-size-graphic', 'figure'), [Input('job-type-dropdown-2', 'value')])
 def update_building_size_graphic(job_type):
 
-    df = load_bar_units_agg(database)
+    df = load_building_size_data(database)
 
     fig = building_size_bar(df, job_type)
+
+    return fig
+
+@app.callback(Output('net-effects-graphic', 'figure'), [Input('net-effects-mode', 'value')])
+def update_net_effects_graphic(mode):
+
+    df = load_net_effects_data(database)
+
+    fig = net_bar_chart(df)
 
     return fig
 

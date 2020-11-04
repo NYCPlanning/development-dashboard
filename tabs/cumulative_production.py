@@ -23,6 +23,15 @@ def create_cumulative_production_tab():
                                             html.H2('Control Panel'),
                                             html.P('Use the dropdown to select one of the '),
                                             dcc.Dropdown(
+                                                id="citywide-dropdown",
+                                                options=[{
+                                                    'label': x,
+                                                    'value': x
+                                                    } for x in ['Citywide', 'Boroughs']
+                                                ],
+                                                value='Citywide'
+                                            ),
+                                            dcc.Dropdown(
                                                 id="job-type-dropdown",
                                                 options=[{
                                                     'label': x,

@@ -5,7 +5,7 @@ from pandas import json_normalize
 import plotly.graph_objects as go
 
 ##########################
-# 
+# cumulative production tab & pipeline tab
 ##########################
 def citywide_choropleth(df, job_type, mapbox_token):
 
@@ -50,8 +50,33 @@ def citywide_choropleth(df, job_type, mapbox_token):
 
     return fig
 
+
+def community_district_choropleth(agg_db, mapbox_token):
+
+    response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
+    
+    geojson = response.json()
+
+    # aggregate by community district 
+    cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
+
+    fig_cd = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    featureidkey="properties.BoroCD")
+
+    fig_cd.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
+                    mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
+
+    fig_cd.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    # the bar chart graphic
+    fig_bar_cd = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack')
+
+    fig_bar_cd.update_layout(xaxis={"type":"category"})
+
+    return fig_cd, fig_bar_cd
+
 ##########################
-# Building Size Bar
+# building size tab
 ##########################
 def building_size_bar(df, job_type):
     
@@ -84,48 +109,11 @@ def building_size_bar(df, job_type):
                 )
             )
     
-    else:
-        for flag in alteration.units_flag.unique():
-
-            fig.add_trace(
-                go.Bar(x=alteration.loc[alteration.units_flag == flag].year, 
-                    y=alteration.loc[alteration.units_flag == flag].total_classa_net, 
-                )
-            )
-
-    
     fig.update_layout(title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
         barmode='stack', xaxis_tickangle=-45)
 
     return fig
 
-##########################
-# HNY 
-##########################
-
-def community_district_choropleth(agg_db, mapbox_token):
-
-    response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
-    
-    geojson = response.json()
-
-    # aggregate by community district 
-    cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
-
-    fig_cd = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
-    featureidkey="properties.BoroCD")
-
-    fig_cd.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
-                    mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
-
-    fig_cd.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
-    # the bar chart graphic
-    fig_bar_cd = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack')
-
-    fig_bar_cd.update_layout(xaxis={"type":"category"})
-
-    return fig_cd, fig_bar_cd
 
 ##########################
 # affordable tab
@@ -147,3 +135,22 @@ def hny_bar_chart(df, status):
         barmode='group', xaxis_tickangle=-45)
 
     return fig 
+
+##########################
+# net effects tab
+##########################
+
+def net_bar_chart(df):
+
+    fig = go.Figure()
+
+    for flag in df.units_flag.unique():
+
+        fig.add_trace(
+            go.Bar(x=df.loc[df.units_flag == flag].year, y=df.loc[df.units_flag == flag].total_classa_net)
+        )
+
+    fig.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
+        barmode='relative', xaxis_tickangle=-45)
+
+    return fig
