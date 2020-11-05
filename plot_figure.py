@@ -60,20 +60,24 @@ def community_district_choropleth(agg_db, mapbox_token):
     # aggregate by community district 
     cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
 
-    fig_cd = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
     featureidkey="properties.BoroCD")
 
-    fig_cd.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
+    fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
                     mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 
-    fig_cd.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
     # the bar chart graphic
-    fig_bar_cd = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack')
+    fig_bar = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack', 
+        title='Number Units by Year and Community District')
 
-    fig_bar_cd.update_layout(xaxis={"type":"category"})
+    fig_bar.update_layout(xaxis={"type":"category"})
 
-    return fig_cd, fig_bar_cd
+    # create a line chart for different number of units in community districts over years 
+    fig_line = px.line(agg_db, x='year', y='num_net_units', color='cd', title='Number of Units Between 2010 and Now')
+
+    return fig_choro, fig_bar, fig_line
 
 ##########################
 # building size tab

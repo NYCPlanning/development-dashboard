@@ -5,14 +5,14 @@ from sqlalchemy import create_engine
 # boro level management
 ##########################
 
-def load_num_dev_res_units_data(db, yr, job_type):
+def load_num_dev_res_units_data(db, yr, job_type, year_flag):
 
     conn = create_engine(db)
 
     # what are the year 
     df = pd.read_sql('''
     SELECT 
-        complete_year :: INTEGER as year,
+        {0} as year,
         coalesce(COUNT(*), 0) as num_dev,
         job_type, 
         SUM(classa_net :: NUMERIC) as total_res_units_net,
@@ -21,15 +21,15 @@ def load_num_dev_res_units_data(db, yr, job_type):
     FROM   final_devdb
 
     WHERE
-        complete_year :: INTEGER >= 2010
+        {0} :: INTEGER >= 2010
         AND 
         job_inactive IS NULL
 
     GROUP  BY
-        complete_year,
+        {0},
         job_type, 
         bct2010
-    ''', con = conn)
+    '''.format(year_flag), con = conn)
 
     # the dataframe is either aggregated across all years for one job type or simply one year is selected
     if yr == 'All Years':
@@ -47,7 +47,7 @@ def load_num_dev_res_units_data(db, yr, job_type):
 # boro level management
 ##########################
 
-def load_community_district_data(boro, db):
+def load_community_district_data(db, boro, year_flag):
 
     boro_dict = {'Manhattan': 1, "Bronx": 2, "Brooklyn": 3, "Queens": 4, "Staten Island": 5}
 
@@ -56,7 +56,7 @@ def load_community_district_data(boro, db):
    
     agg_db = pd.read_sql('''
     SELECT 
-        complete_year AS year,
+        {yf} AS year,
         comunitydist AS cd, 
         SUM(classa_net :: INTEGER) as num_net_units
     
@@ -64,14 +64,14 @@ def load_community_district_data(boro, db):
         final_devdb
 
     WHERE
-        complete_year::INTEGER >= 2010
+        {yf} :: INTEGER >= 2010
         AND 
         boro::INTEGER = {slct_boro}
 
     GROUP BY 
-        complete_year,
+        {yf},
         comunitydist
-    '''.format(slct_boro=boro_dict[boro]), con = conn)
+    '''.format(yf=year_flag, slct_boro=boro_dict[boro]), con = conn)
 
 
     agg_db.dropna(subset=['num_net_units'], inplace=True)

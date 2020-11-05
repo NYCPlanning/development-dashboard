@@ -32,6 +32,7 @@ from tabs.cumulative_production import create_cumulative_production_tab
 from tabs.affordable_housing import create_affordable_housing_tab
 from tabs.building_size import create_building_size_tab
 from tabs.net_effects import create_net_effects_tab
+from tabs.pipeline import create_pipeline_tab
 
 # get the enviromental variable in local testing 
 load_dotenv(find_dotenv())
@@ -50,13 +51,6 @@ colors = {
     'text': '#7FDBFF'
 }
 
-boro_options = [
-'Manhattan',
-'Bronx',
-'Brooklyn',
-'Queens',
-'Staten Island'
-]
 ####################
 # components 
 ####################
@@ -64,42 +58,11 @@ boro_options = [
 headers = create_headers()
 
 ######################
-# Tabs 
+# Call the Tabs Functions to create tabs
 ########################
-cumulative_content = create_cumulative_production_tab()
+cumulative_content = create_cumulative_production_tab(app)
 
-pipeline_content = dbc.Card(
-    dbc.CardBody(
-        [
-            html.Div(
-                [
-                    dcc.Dropdown(
-                        id='boro-dropdown',
-                        options=[{'label': k, 'value': k} for k in boro_options],
-                        value='Manhattan'
-                    ),
-                    dcc.Graph(id='cd-choro-graphic'),
-                    dcc.Slider(
-                        id='cd-year-slider',
-                        min=2010,
-                        max=2020,
-                        value=2010,
-                        marks={str(year): str(year) for year in range(2010, 2020)},
-                        included=False
-                    ),
-                ], 
-                style={'width': '70%', 'float': 'Center', 'display': 'inline-block'}
-            ),
-            html.Div(
-                [
-                    dcc.Graph(id='cd-bar-chart')
-                ],
-                style={'width': '70%', 'float': 'Center', 'display': 'inline-block'}
-            )
-        ]
-    ),
-    className="mt-3",
-)
+pipeline_content = create_pipeline_tab(app)
 
 affordable_content = create_affordable_housing_tab()
 
@@ -130,17 +93,17 @@ tab_selected_style = {
 app.layout = html.Div([
     html.H1('Housing Dashboard'),
     headers,
-    dcc.Tabs(id="tabs-main", value='tab-cumulative', children=[
+    dcc.Tabs(id="tab-selection", value='tab-cumulative', children=[
         dcc.Tab(label='Cumulative Production', value='tab-cumulative', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Pipeline', value='tab-pipeline', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Affordable Housing', value='tab-affordable', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Building Size', value='tab-size', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Net Effects', value='tab-net-effects', style=tab_style, selected_style=tab_selected_style)
     ], style=tabs_styles),
-    html.Div(id='tabs-content')
+    html.Div(id='tab-content')
 ])
 
-@app.callback(Output('tabs-content', 'children'), [Input('tabs-main', 'value')])
+@app.callback(Output('tab-content', 'children'), [Input('tab-selection', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
         return cumulative_content
@@ -155,10 +118,14 @@ def render_content(tab):
 
 
 @app.callback(Output('choro-graphic', 'figure'),
-    [Input('job-type-dropdown', 'value'), Input('year-slider', 'value')])
-def update_citywide_graphic(job_type, year):
+    [Input('job-type-dropdown', 'value'), 
+    Input('year-slider', 'value'),
+    Input('tab-selection', 'value')])
+def update_citywide_graphic(job_type, year, tab_select):
+
+    year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
     
-    df = load_num_dev_res_units_data(database, year, job_type)
+    df = load_num_dev_res_units_data(database, year, job_type, year_flag)
 
     fig = citywide_choropleth(df, job_type, mapbox_token)
 
@@ -166,17 +133,20 @@ def update_citywide_graphic(job_type, year):
 
 @app.callback(
     [Output('cd-choro-graphic', 'figure'),
-    Output('cd-bar-chart', 'figure')],
+    Output('cd-bar-chart', 'figure'),
+    Output('cd-line-chart', 'figure')],
     [Input('boro-dropdown', 'value'),
-    Input('cd-year-slider', 'value')]
+    Input('tab-selection', 'value')]
 )
-def update_community_district_graphic(boro, year):
+def update_community_district_graphic(boro, tab_select):
 
-    df = load_community_district_data(boro, database)
+    year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
 
-    choro, bar = community_district_choropleth(df, mapbox_token)
+    df = load_community_district_data(database, boro, year_flag)
 
-    return choro, bar
+    choro, bar, line = community_district_choropleth(df, mapbox_token)
+
+    return choro, bar, line
 
 
 @app.callback(Output('affordable-graphic', 'figure'), [Input('status-radio', 'value')])
