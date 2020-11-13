@@ -40,8 +40,8 @@ def citywide_choropleth(df, job_type, mapbox_token):
         rs = None
 
 
-    fig = px.choropleth_mapbox(merged, geojson=geojson, locations='bct2010', color=merged.units_per_acre, hover_data=['acreage', 'total_res_units_net'],
-    featureidkey="properties.BoroCT2010")
+    fig = px.choropleth_mapbox(merged, geojson=geojson, locations='bct2010', color=merged.units_per_acre, 
+        hover_data=['acreage', 'total_res_units_net'], featureidkey="properties.BoroCT2010")
 
     fig.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
                     mapbox_zoom=9, mapbox_center = {"lat": 40.730610, "lon": -73.935242})
@@ -67,7 +67,7 @@ def community_district_choropleth(agg_db, mapbox_token):
                     mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 
     fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
+ 
     # the bar chart graphic
     fig_bar = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack', 
         title='Number Units by Year and Community District')
@@ -144,17 +144,46 @@ def hny_bar_chart(df, status):
 # net effects tab
 ##########################
 
-def net_bar_chart(df):
+def net_bar_chart(df, mapbox_token, x_axis):
 
     fig = go.Figure()
 
-    for flag in df.units_flag.unique():
+    if x_axis == 'By Year':
 
-        fig.add_trace(
-            go.Bar(x=df.loc[df.units_flag == flag].year, y=df.loc[df.units_flag == flag].total_classa_net)
-        )
+        for flag in df.units_flag.unique():
 
-    fig.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
-        barmode='relative', xaxis_tickangle=-45)
+            fig.add_trace(
+                go.Bar(x=df.loc[df.units_flag == flag].year, y=df.loc[df.units_flag == flag].total_classa_net)
+            )
 
-    return fig
+        fig.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
+            barmode='relative', xaxis_tickangle=-45)
+    
+    else:
+
+        bar = go.Figure()
+
+        for flag in df.units_flag.unique():
+
+            bar.add_trace(
+                go.Bar(x=df.loc[df.units_flag == flag].cd, y=df.loc[df.units_flag == flag].total_classa_net)
+            )
+
+        bar.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
+            barmode='relative', xaxis_tickangle=-45)
+        
+
+        response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
+        
+        geojson = response.json()
+
+        # aggregate by community district 
+        cd_choro = df.groupby('cd')['total_classa_net'].sum().reset_index()
+
+        choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.total_classa_net,
+        featureidkey="properties.BoroCD")
+
+        choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
+                    mapbox_zoom=9, mapbox_center = {"lat": 40.730610, "lon": -73.935242})
+
+    return bar, choro

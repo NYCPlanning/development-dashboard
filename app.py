@@ -60,15 +60,16 @@ headers = create_headers()
 ######################
 # Call the Tabs Functions to create tabs
 ########################
-cumulative_content = create_cumulative_production_tab(app)
+cumulative_tab = create_cumulative_production_tab(app)
 
-pipeline_content = create_pipeline_tab(app)
+pipeline_tab = create_pipeline_tab(app)
 
-affordable_content = create_affordable_housing_tab()
+affordable_tab = create_affordable_housing_tab()
 
-building_size_content = create_building_size_tab()
+building_size_tab = create_building_size_tab()
 
-net_effects_content = create_net_effects_tab()
+net_effects_tab = create_net_effects_tab(app)
+
 #################### 
 # dcc tabs 
 ####################
@@ -106,22 +107,26 @@ app.layout = html.Div([
 @app.callback(Output('tab-content', 'children'), [Input('tab-selection', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
-        return cumulative_content
+        return cumulative_tab
     elif tab == 'tab-pipeline':
-        return pipeline_content
+        return pipeline_tab
     elif tab == 'tab-affordable':
-        return affordable_content
+        return affordable_tab
     elif tab == 'tab-size':
-        return building_size_content
+        return building_size_tab
     elif tab == 'tab-net-effects':
-        return net_effects_content
+        return net_effects_tab
 
 
-@app.callback(Output('choro-graphic', 'figure'),
-    [Input('job-type-dropdown', 'value'), 
-    Input('year-slider', 'value'),
-    Input('tab-selection', 'value')])
-def update_citywide_graphic(job_type, year, tab_select):
+@app.callback(
+    Output('choro-graphic', 'figure'),
+    [
+        Input('tab-selection', 'value'),
+        Input('cumulative-job-type-dropdown', 'value'), 
+        Input('cumulative-year-slider', 'value')
+    ]
+)
+def update_citywide_graphic(tab_select, job_type, year):
 
     year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
     
@@ -132,13 +137,17 @@ def update_citywide_graphic(job_type, year, tab_select):
     return fig
 
 @app.callback(
-    [Output('cd-choro-graphic', 'figure'),
-    Output('cd-bar-chart', 'figure'),
-    Output('cd-line-chart', 'figure')],
-    [Input('boro-dropdown', 'value'),
-    Input('tab-selection', 'value')]
+    [
+        Output('cd-choro-graphic', 'figure'),
+        Output('cd-bar-chart', 'figure'),
+        Output('cd-line-chart', 'figure')
+    ],
+    [
+        Input('tab-selection', 'value'),
+        Input('cumulative-boro-dropdown', 'value')
+    ]
 )
-def update_community_district_graphic(boro, tab_select):
+def update_community_district_graphic(tab_select, boro):
 
     year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
 
@@ -167,14 +176,28 @@ def update_building_size_graphic(job_type):
 
     return fig
 
-@app.callback(Output('net-effects-graphic', 'figure'), [Input('net-effects-mode', 'value')])
-def update_net_effects_graphic(mode):
+@app.callback(
+    [
+        Output('net-effects-bar', 'figure'),
+        Output('net-effects-choro', 'figure')
+    ],
+    [
+        Input('net-effects-job-type-dropdown', 'value'),
+        Input('net-effects-x-dropdown', 'value'),
+        Input('net-effects-boro-radio', 'value'),
+        Input('net-effects-year-slider', 'value')
+    ]
+)
+def update_net_effects_graphic(job_type, x_axis, boro, year):
 
-    df = load_net_effects_data(database)
+    df = load_net_effects_data(database, job_type, x_axis, boro, year)
 
-    fig = net_bar_chart(df)
+    print(x_axis)
+    
+    bar, choro = net_bar_chart(df, mapbox_token, x_axis)
 
-    return fig
+    return bar, choro
+
 
 if __name__ == '__main__':
 

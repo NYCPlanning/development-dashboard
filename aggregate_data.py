@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 # boro level management
 ##########################
 
-def load_num_dev_res_units_data(db, yr, job_type, year_flag):
+def load_num_dev_res_units_data(db, year, job_type, year_flag):
 
     conn = create_engine(db)
 
@@ -32,14 +32,14 @@ def load_num_dev_res_units_data(db, yr, job_type, year_flag):
     '''.format(year_flag), con = conn)
 
     # the dataframe is either aggregated across all years for one job type or simply one year is selected
-    if yr == 'All Years':
+    if year == 'All Years':
 
         ftd_df = df.loc[(df.job_type == job_type)].groupby('bct2010')['total_res_units_net'].agg('sum').reset_index()
 
     else:
 
-        ftd_df = df.loc[(df.job_type == job_type) & (df.year == int(yr))]
-
+        ftd_df = df.loc[(df.job_type == job_type) & (df.year == str(year))]
+    
     return ftd_df
 
 
@@ -164,34 +164,68 @@ def load_building_size_data(db):
 # Net Effects 
 ##########################
 
-def load_net_effects_data(db):
+def load_net_effects_data(database, job_type, x_axis, select_boro, select_year):
 
-    conn = create_engine(db)
+    conn = create_engine(database)
 
-    agg_db = pd.read_sql('''
-    SELECT 
-        complete_year AS year,
-        SUM(classa_net) as total_classa_net,
-        CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
-        WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
-        END as units_flag
-    
-    FROM   
-        final_devdb
+    if x_axis == 'By Year':
 
-    WHERE
-        complete_year::INTEGER >= 2010
-        AND
-        job_type = 'Alteration'
-        AND 
-        classa_net::INTEGER <> 0
+        agg_db = pd.read_sql('''
 
-    GROUP BY 
-        complete_year,
-        CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
-        WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
-        END 
-    
-    ''', con = conn)
+        SELECT 
+            complete_year AS year,
+            SUM(classa_net) as total_classa_net,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END as units_flag
+        
+        FROM   
+            final_devdb
+
+        WHERE
+            complete_year::INTEGER >= 2010
+            AND
+            job_type = 'Alteration'
+            AND 
+            classa_net::INTEGER <> 0
+
+        GROUP BY 
+            complete_year,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END 
+        
+        ''', con = conn)
+
+    else: 
+
+        agg_db = pd.read_sql('''
+
+        SELECT 
+            SUM(classa_net) as total_classa_net,
+            comunitydist AS cd,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END as units_flag
+        
+        FROM   
+            final_devdb
+
+        WHERE
+            complete_year::INTEGER = {year}
+            AND
+            job_type = 'Alteration'
+            AND 
+            classa_net::INTEGER <> 0
+            AND 
+            boro :: INTEGER = {boro}
+
+        GROUP BY 
+            comunitydist,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END 
+        
+        '''.format(year=select_year, boro=select_boro), con = conn)
 
     return agg_db

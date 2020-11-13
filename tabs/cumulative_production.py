@@ -18,7 +18,7 @@ def create_cumulative_production_tab(app):
                         [
                             html.P('Please use the options to select one job type to view'),                                
                             dcc.Dropdown(
-                                id="job-type-dropdown",
+                                id="cumulative-job-type-dropdown",
                                 options=[{
                                     'label': x,
                                     'value': x
@@ -28,7 +28,7 @@ def create_cumulative_production_tab(app):
                             ),
                             html.P('Use the slider to select a year'),
                             dcc.Slider(
-                                id='year-slider',
+                                id='cumulative-year-slider',
                                 min=2010,
                                 max=2020,
                                 value=2010,
@@ -46,7 +46,7 @@ def create_cumulative_production_tab(app):
                 [
                     html.P('Please use the dropdown below to select a borough to view'),
                     dcc.Dropdown(
-                        id='boro-dropdown',
+                        id='cumulative-boro-dropdown',
                         options=[{'label': k, 'value': k} for k in boro_options],
                         value='Manhattan'
                     )
@@ -74,11 +74,6 @@ def create_cumulative_production_tab(app):
                         ]
                     ),
                     dcc.Graph(id='cd-line-chart')
-                    #dbc.Row(
-                        #[
-                        #    dcc.Graph(id='cd-line-chart')
-                        #]
-                    #)
                 ]
             )
         
