@@ -24,8 +24,8 @@ from aggregate_data import load_net_effects_data
 from plot_figure import citywide_choropleth
 from plot_figure import community_district_choropleth
 from plot_figure import building_size_bar
-from plot_figure import hny_bar_chart
-from plot_figure import net_bar_chart
+from plot_figure import hny_chart
+from plot_figure import net_effects_chart
 
 
 from tabs.cumulative_production import create_cumulative_production_tab
@@ -157,15 +157,27 @@ def update_community_district_graphic(tab_select, boro):
 
     return choro, bar, line
 
+###############################
+# affordable
+###############################
+@app.callback(
+    [
+        Output('affordable-bar', 'figure'), 
+        Output('affordable-bar-hny-charct', 'figure')
+    ],
+    [
+        Input('affordable-percent-radio', 'value'),
+        Input('affordable-status-radio', 'value'),
+        Input('affordable-charct-radio', 'value')
+    ]
+)
+def update_affordable_graphic(percent_flag, status, charct_flag):
 
-@app.callback(Output('affordable-graphic', 'figure'), [Input('status-radio', 'value')])
-def update_affordable_graphic(status):
+    df, df_charct = load_affordable_data(database, percent_flag, status, charct_flag)
 
-    df = load_affordable_data(database, status)
+    bar, hny_bar = hny_chart(df, df_charct, percent_flag, status)
 
-    fig = hny_bar_chart(df, status)
-
-    return fig
+    return bar, hny_bar
 
 @app.callback(Output('building-size-graphic', 'figure'), [Input('job-type-dropdown-2', 'value')])
 def update_building_size_graphic(job_type):
@@ -178,8 +190,8 @@ def update_building_size_graphic(job_type):
 
 @app.callback(
     [
-        Output('net-effects-bar', 'figure'),
-        Output('net-effects-choro', 'figure')
+        Output('net-effects-boro-bar', 'figure'),
+        Output('net-effects-boro-choro', 'figure')
     ],
     [
         Input('net-effects-job-type-dropdown', 'value'),
@@ -188,15 +200,28 @@ def update_building_size_graphic(job_type):
         Input('net-effects-year-slider', 'value')
     ]
 )
-def update_net_effects_graphic(job_type, x_axis, boro, year):
+def update_net_effects_boro_graphic(job_type, x_axis, boro, year):
 
-    df = load_net_effects_data(database, job_type, x_axis, boro, year)
+    df = load_net_effects_data(database, job_type, x_axis, boro, year[0], year[1])
 
-    print(x_axis)
-    
-    bar, choro = net_bar_chart(df, mapbox_token, x_axis)
+    bar, choro = net_effects_chart(df, mapbox_token, x_axis)
 
     return bar, choro
+
+@app.callback(Output('net-effects-year-bar', 'figure'),
+    [
+        Input('net-effects-job-type-dropdown', 'value'),
+        Input('net-effects-x-dropdown', 'value')
+    ]
+)
+def update_net_effects_year_graphic(job_type, x_axis):
+
+    df = load_net_effects_data(database, job_type, x_axis)
+    
+    bar = net_effects_chart(df, mapbox_token, x_axis)
+
+    return bar
+
 
 
 if __name__ == '__main__':

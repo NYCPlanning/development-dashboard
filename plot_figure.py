@@ -4,9 +4,9 @@ import pandas as pd
 from pandas import json_normalize
 import plotly.graph_objects as go
 
-##########################
+#############################################
 # cumulative production tab & pipeline tab
-##########################
+#############################################
 def citywide_choropleth(df, job_type, mapbox_token):
 
     # get the geojson needed for the mapping 
@@ -69,8 +69,8 @@ def community_district_choropleth(agg_db, mapbox_token):
     fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
  
     # the bar chart graphic
-    fig_bar = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack', 
-        title='Number Units by Year and Community District')
+    fig_bar = px.bar(agg_db, x='num_net_units', y='cd', color='year', barmode='stack', 
+        title='Number Units by Year and Community District', orientation='h')
 
     fig_bar.update_layout(xaxis={"type":"category"})
 
@@ -123,41 +123,58 @@ def building_size_bar(df, job_type):
 # affordable tab
 ##########################
 
-def hny_bar_chart(df, status):
+def hny_chart(df, df_charct, percent_flag, status):
 
-    fig = go.Figure()
+    bar = go.Figure()
 
-    fig.add_trace(
-        go.Bar(x=df.boro, y=df.total_units_net, name='Regular')
+    bar.add_trace(
+        go.Bar(x=df.boro, y=df.other_units, name='Other Units')
     )
 
-    fig.add_trace(
-        go.Bar(x=df.boro, y=df.total_hny_units_net, name='HNY Units')
+    bar.add_trace(
+        go.Bar(x=df.boro, y=df.hny_units, name='HNY Units')
     )
 
-    fig.update_layout(title='Residential Units and HNY Units in ' + status + ' Projects', 
-        barmode='group', xaxis_tickangle=-45)
+    bar.update_layout(title='Residential Units and HNY Units in ' + status + ' Projects', 
+        barmode='stack', xaxis_tickangle=-45)
 
-    return fig 
+    hny_bar = go.Figure()
+
+    for col in df_charct.columns[:-1]:
+
+        hny_bar.add_trace(
+            go.Bar(x=df_charct.borough, y=df_charct[col], name=col)
+        )
+
+    hny_bar.update_layout(title='HNY Characteristics', 
+        barmode='stack', xaxis_tickangle=-45)
+
+    return bar, hny_bar
 
 ##########################
 # net effects tab
 ##########################
 
-def net_bar_chart(df, mapbox_token, x_axis):
-
-    fig = go.Figure()
+def net_effects_chart(df, mapbox_token, x_axis):
 
     if x_axis == 'By Year':
 
+        bar = go.Figure()
+
         for flag in df.units_flag.unique():
 
-            fig.add_trace(
+            bar.add_trace(
                 go.Bar(x=df.loc[df.units_flag == flag].year, y=df.loc[df.units_flag == flag].total_classa_net)
             )
 
-        fig.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
+        net_table = df.groupby('year').total_classa_net.sum().reset_index()
+
+        bar.add_trace(go.Scatter(x=net_table.year, y=net_table.total_classa_net, mode='markers'))
+
+        bar.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
             barmode='relative', xaxis_tickangle=-45)
+
+        return bar
     
     else:
 
@@ -166,8 +183,12 @@ def net_bar_chart(df, mapbox_token, x_axis):
         for flag in df.units_flag.unique():
 
             bar.add_trace(
-                go.Bar(x=df.loc[df.units_flag == flag].cd, y=df.loc[df.units_flag == flag].total_classa_net)
+                go.Bar(x=df.loc[df.units_flag == flag].total_classa_net, y=df.loc[df.units_flag == flag].cd, orientation='h')
             )
+
+        net_table = df.groupby('cd').total_classa_net.sum().reset_index()
+
+        bar.add_trace(go.Scatter(x=net_table.total_classa_net, y=net_table.cd, mode='markers'))
 
         bar.update_layout(title='Net Effects on Residential Units Alteration Jobs Only', 
             barmode='relative', xaxis_tickangle=-45)
@@ -181,9 +202,9 @@ def net_bar_chart(df, mapbox_token, x_axis):
         cd_choro = df.groupby('cd')['total_classa_net'].sum().reset_index()
 
         choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.total_classa_net,
-        featureidkey="properties.BoroCD")
+            featureidkey="properties.BoroCD")
 
         choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
                     mapbox_zoom=9, mapbox_center = {"lat": 40.730610, "lon": -73.935242})
 
-    return bar, choro
+        return bar, choro

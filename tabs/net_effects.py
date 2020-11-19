@@ -6,12 +6,58 @@ from dash.dependencies import Input, Output
 
 def create_net_effects_tab(app):
 
+    @app.callback(Output('net-effects-control', 'children'), [Input('net-effects-x-dropdown', 'value')])
+    def create_net_effects_control_panel(x_dropdown):
+
+        if x_dropdown == 'By Borough':
+
+            widgets = html.Div(
+                        [
+                            html.P('Please use the options to select a borough to view'),                                
+                            # boro selection 
+                            dcc.RadioItems(
+                                id='net-effects-boro-radio',
+                                options=[
+                                    {'label': 'Manhattan', 'value': 1},
+                                    {'label': 'Bronx', 'value': 2},
+                                    {'label': 'Brooklyn', 'value': 3},
+                                    {'label': 'Queens', 'value': 4},
+                                    {'label': 'Staten Island', 'value': 5},
+                                ],
+                                value=1,
+                                labelStyle={'display': 'inline-block'}
+                            ),  
+                            html.P('Use the slider to select a year or the range of years'),
+                            dcc.RangeSlider(
+                                id='net-effects-year-slider',
+                                min=2010,
+                                max=2020,
+                                value=[2010, 2020],
+                                marks={str(year): str(year) for year in range(2010, 2021)},
+                                included=True
+                            )
+                        ]
+            )
+
+        else:
+
+            widgets = html.P('')
+
+
+        return widgets
+
     @app.callback(Output('net-effects-content', 'children'), [Input('net-effects-x-dropdown', 'value')])
     def create_net_effects_content(x_dropdown):
 
         if x_dropdown == 'By Year':
 
-            content = dcc.Graph(id='net-effects-graphic')
+            content = html.Div(
+                [
+                    dcc.Graph(id='net-effects-year-bar'),
+                    #dcc.Graph(id='net-effects-table')
+                ]
+            )
+            
 
         else:
 
@@ -19,49 +65,20 @@ def create_net_effects_tab(app):
 
             content = html.Div(
                 [
-                    # boro selection 
-                    dcc.RadioItems(
-                        id='net-effects-boro-radio',
-                        options=[
-                            {'label': 'Manhattan', 'value': 1},
-                            {'label': 'Bronx', 'value': 2},
-                            {'label': 'Brooklyn', 'value': 3},
-                            {'label': 'Queens', 'value': 4},
-                            {'label': 'Staten Island', 'value': 5},
-                        ],
-                        value=1,
-                        labelStyle={'display': 'inline-block'}
-                    ),  
-                    # the bar chart 
-                    dcc.Graph(id='net-effects-choro'),
-                    # also add a map
-                    dcc.Graph(id='net-effects-bar'),
-                    dcc.Slider(
-                        id='net-effects-year-slider',
-                        min=2010,
-                        max=2020,
-                        value=2010,
-                        marks={str(year): str(year) for year in range(2010, 2021)},
-                        included=False
-                    ),
-                    html.P(""),
-                    """
-                    dbc.ButtonGroup(
-                        id='borough-option-button',
-                        children=[
-                            #dbc.Button("All", id='borough-button-all'), 
-                            dbc.Button("Manhattan", id='manhattan-button'), 
-                            dbc.Button("Bronx", id='bronx-button'),
-                            dbc.Button("Queen", id='queen-button'),
-                            dbc.Button("Booklyn", id='brooklyn-button'),
-                            dbc.Button("Staten Island", id='staten-island-button')
-                        ],
-                        loading_state={'is_loading': True, 'component_name':'borough-button-all'},
-                        style={'width': '70%', 'float': 'Center', 'display': 'inline-block'}
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                # the bar chart 
+                                dcc.Graph(id='net-effects-boro-choro')
+                            ),
+                            dbc.Col(
+                                # also add a map
+                                dcc.Graph(id='net-effects-boro-bar')
+                            )
+                        ]
                     )
-                    """
                 ], 
-                style={'width': '70%', 'float': 'Center', 'display': 'inline-block'}
+                style={'width': '100%', 'float': 'Center', 'display': 'inline-block'}
             )
 
         return content
@@ -78,7 +95,7 @@ def create_net_effects_tab(app):
                                     html.Div(
                                         [
                                             html.H2('Control Panel'),
-                                            html.P('Use radio to select view units for complete or incomplete projects'),
+                                            html.P('Use dropdown to select view units for complete or incomplete projects'),
                                             dcc.Dropdown(
                                                 id="net-effects-job-type-dropdown",
                                                 options=[{
@@ -98,11 +115,12 @@ def create_net_effects_tab(app):
                                                 ],
                                                 value='By Borough'
                                             ),
+                                            html.Div(id='net-effects-control')
                                         ]
                                     )
                                 )
                             ),
-                            width={"size": 4}
+                            width={"size": 3}
                         ),
                         # this is the main graphics panel
                         dbc.Col(html.Div(id='net-effects-content'))
