@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 
 def create_pipeline_tab(app):
 
-    @app.callback(Output('pipeline-control', 'children'), [Input('citywide-dropdown', 'value')])
+    @app.callback(Output('pipeline-control', 'children'), [Input('pp-citywide-dropdown', 'value')])
     def create_pipeline_control_panel(citywide_toggle):
 
         if citywide_toggle == 'Citywide':
@@ -18,22 +18,41 @@ def create_pipeline_tab(app):
                         [
                             html.P('Please use the options to select one job type to view'),                                
                             dcc.Dropdown(
-                                id="job-type-dropdown",
-                                options=[{
-                                    'label': x,
-                                    'value': x
-                                    } for x in ['New Building', 'Demolition', 'Alteration']
+                                id="pp-citywide-job-type-dropdown",
+                                options=[
+                                    {'label': 'All Job Types', 'value': "'New Building', 'Demolition', 'Alteration'"},
+                                    {'label': 'New Building', 'value': "'New Building'"},
+                                    {'label': 'Demolition', 'value': "'Demolition'"},
+                                    {'label': 'Alteration', 'value': "'Alteration'"}                          
                                 ],
-                                value='New Building'
+                                value="'New Building', 'Demolition', 'Alteration'"
+                            ),
+                            html.P('View by number of jobs or residential units'),
+                            dcc.RadioItems(
+                                id='pp-citywide-jobs-units-radio',
+                                options=[
+                                    {'label': 'View by Residential Units', 'value': 'total_classa_net'},
+                                    {'label': 'View by Number of Jobs', 'value': 'total_num_jobs'}
+                                ],
+                                value='total_classa_net'
+                            ),
+                            html.P('To View Units Normalized Acreage or Unnormalized'),
+                            dcc.RadioItems(
+                                id='pp-citywide-normalization-radio',
+                                options=[
+                                    {'label': 'Normalized by Acreage', 'value': 'units_per_acre'},
+                                    {'label': 'Unnormalized', 'value': 'others'}
+                                ],
+                                value='units_per_acre'
                             ),
                             html.P('Use the slider to select a year'),
-                            dcc.Slider(
-                                id='year-slider',
+                            dcc.RangeSlider(
+                                id='pp-citywide-year-range-slider',
                                 min=2010,
                                 max=2020,
-                                value=2010,
+                                value=[2010, 2020],
                                 marks={str(year): str(year) for year in range(2010, 2021)},
-                                included=False
+                                included=True
                             )
                         ]
             )
@@ -46,7 +65,7 @@ def create_pipeline_tab(app):
                 [
                     html.P('Please use the dropdown below to select a borough to view'),
                     dcc.Dropdown(
-                        id='boro-dropdown',
+                        id='pp-cd-boro-dropdown',
                         options=[{'label': k, 'value': k} for k in boro_options],
                         value='Manhattan'
                     )
@@ -61,7 +80,7 @@ def create_pipeline_tab(app):
 
         if citywide_toggle == 'Citywide':
 
-            content = dcc.Graph(id='choro-graphic')
+            content = dcc.Graph(id='pp-citywide-choro')
 
         else:
             
@@ -69,11 +88,11 @@ def create_pipeline_tab(app):
                 [
                     dbc.Row(
                         [
-                            dbc.Col(dcc.Graph(id='cd-choro-graphic')),
-                            dbc.Col(dcc.Graph(id='cd-bar-chart'))
+                            dbc.Col(dcc.Graph(id='pp-cd-choro')),
+                            dbc.Col(dcc.Graph(id='pp-cd-bar'))
                         ]
                     ),
-                    dcc.Graph(id='cd-line-chart')
+                    dcc.Graph(id='pp-cd-line')
                     #dbc.Row(
                         #[
                         #    dcc.Graph(id='cd-line-chart')
@@ -98,7 +117,7 @@ def create_pipeline_tab(app):
                                             html.H2('Control Panel'),
                                             html.P('Choose Citywide view or Borough View'),
                                             dcc.Dropdown(
-                                                id="citywide-dropdown",
+                                                id="pp-citywide-dropdown",
                                                 options=[{
                                                     'label': x,
                                                     'value': x

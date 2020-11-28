@@ -17,7 +17,7 @@ from dotenv import load_dotenv, find_dotenv
 from aggregate_data import load_community_district_data
 from aggregate_data import load_affordable_data
 from aggregate_data import load_building_size_data
-from aggregate_data import load_num_dev_res_units_data
+from aggregate_data import load_citywide_data
 from aggregate_data import load_net_effects_data
 
 
@@ -55,7 +55,7 @@ colors = {
 # components 
 ####################
 
-headers = create_headers()
+#headers = create_headers()
 
 ######################
 # Call the Tabs Functions to create tabs
@@ -93,7 +93,7 @@ tab_selected_style = {
 
 app.layout = html.Div([
     html.H1('Housing Dashboard'),
-    headers,
+    #headers,
     dcc.Tabs(id="tab-selection", value='tab-cumulative', children=[
         dcc.Tab(label='Cumulative Production', value='tab-cumulative', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Pipeline', value='tab-pipeline', style=tab_style, selected_style=tab_selected_style),
@@ -104,6 +104,10 @@ app.layout = html.Div([
     html.Div(id='tab-content')
 ])
 
+
+###########################
+# production and pipelines
+###########################
 @app.callback(Output('tab-content', 'children'), [Input('tab-selection', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
@@ -119,32 +123,34 @@ def render_content(tab):
 
 
 @app.callback(
-    Output('choro-graphic', 'figure'),
+    Output('pp-citywide-choro', 'figure'),
     [
         Input('tab-selection', 'value'),
-        Input('cumulative-job-type-dropdown', 'value'), 
-        Input('cumulative-year-slider', 'value')
+        Input('pp-citywide-job-type-dropdown', 'value'), 
+        Input('pp-citywide-year-range-slider', 'value'),
+        Input('pp-citywide-jobs-units-radio', 'value'),
+        Input('pp-citywide-normalization-radio', 'value')
     ]
 )
-def update_citywide_graphic(tab_select, job_type, year):
+def update_citywide_graphic(tab_select, job_type, year, job_units, normalization):
 
     year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
     
-    df = load_num_dev_res_units_data(database, year, job_type, year_flag)
+    df = load_citywide_data(database, job_type, year_flag, year[0], year[1])
 
-    fig = citywide_choropleth(df, job_type, mapbox_token)
+    fig = citywide_choropleth(df, mapbox_token, job_type, job_units, normalization)
 
     return fig
 
 @app.callback(
     [
-        Output('cd-choro-graphic', 'figure'),
-        Output('cd-bar-chart', 'figure'),
-        Output('cd-line-chart', 'figure')
+        Output('pp-cd-choro', 'figure'),
+        Output('pp-cd-bar', 'figure'),
+        Output('pp-cd-line', 'figure')
     ],
     [
         Input('tab-selection', 'value'),
-        Input('cumulative-boro-dropdown', 'value')
+        Input('pp-cd-boro-dropdown', 'value')
     ]
 )
 def update_community_district_graphic(tab_select, boro):
@@ -179,6 +185,9 @@ def update_affordable_graphic(percent_flag, status, charct_flag):
 
     return bar, hny_bar
 
+###############################
+# building size
+###############################
 @app.callback(Output('building-size-graphic', 'figure'), [Input('job-type-dropdown-2', 'value')])
 def update_building_size_graphic(job_type):
 
@@ -188,6 +197,10 @@ def update_building_size_graphic(job_type):
 
     return fig
 
+
+###############################
+# net effects
+###############################
 @app.callback(
     [
         Output('net-effects-boro-bar', 'figure'),
@@ -204,21 +217,22 @@ def update_net_effects_boro_graphic(job_type, x_axis, boro, year):
 
     df = load_net_effects_data(database, job_type, x_axis, boro, year[0], year[1])
 
-    bar, choro = net_effects_chart(df, mapbox_token, x_axis)
+    bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis)
 
     return bar, choro
 
 @app.callback(Output('net-effects-year-bar', 'figure'),
     [
         Input('net-effects-job-type-dropdown', 'value'),
-        Input('net-effects-x-dropdown', 'value')
+        Input('net-effects-x-dropdown', 'value'),
+        Input('net-effects-year-boro-radio', 'value')
     ]
 )
-def update_net_effects_year_graphic(job_type, x_axis):
+def update_net_effects_year_graphic(job_type, x_axis, boro):
 
-    df = load_net_effects_data(database, job_type, x_axis)
+    df = load_net_effects_data(database, job_type, x_axis, boro)
     
-    bar = net_effects_chart(df, mapbox_token, x_axis)
+    bar = net_effects_chart(df, mapbox_token, job_type, x_axis)
 
     return bar
 

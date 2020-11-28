@@ -5,42 +5,45 @@ from sqlalchemy import create_engine
 # boro level management
 ##########################
 
-def load_num_dev_res_units_data(db, year, job_type, year_flag):
+def load_citywide_data(db, job_type, year_flag, year_start, year_end):
 
     conn = create_engine(db)
 
     # what are the year 
     df = pd.read_sql('''
     SELECT 
-        {0} as year,
-        coalesce(COUNT(*), 0) as num_dev,
-        job_type, 
-        SUM(classa_net :: NUMERIC) as total_res_units_net,
-        bct2010 
+        --- {year_flag} as year,
+        coalesce(COUNT(*), 0) as total_num_jobs,
+        SUM(classa_net :: NUMERIC) as total_classa_net,
+        bct2010 :: VARCHAR
         
-    FROM   final_devdb
+    FROM   export_devdb
 
     WHERE
-        {0} :: INTEGER >= 2010
+        {year_flag} :: NUMERIC BETWEEN {year_start} AND {year_end} 
         AND 
         job_inactive IS NULL
+        AND 
+        job_type IN ({job_type})
+        
+
 
     GROUP  BY
-        {0},
-        job_type, 
+        --- {year_flag},
+        --- job_type, 
         bct2010
-    '''.format(year_flag), con = conn)
+    '''.format(year_flag=year_flag, job_type=job_type, year_start=year_start, year_end=year_end), con = conn)
 
     # the dataframe is either aggregated across all years for one job type or simply one year is selected
-    if year == 'All Years':
+    #if year == 'All Years':
 
-        ftd_df = df.loc[(df.job_type == job_type)].groupby('bct2010')['total_res_units_net'].agg('sum').reset_index()
+        #ftd_df = df.loc[(df.job_type == job_type)].groupby('bct2010')['total_classa_net'].agg('sum').reset_index()
 
-    else:
+    #else:
 
-        ftd_df = df.loc[(df.job_type == job_type) & (df.year == str(year))]
+        #ftd_df = df.loc[(df.job_type == job_type) & (df.year == float(year))]
     
-    return ftd_df
+    return df
 
 
 ##########################
@@ -49,7 +52,7 @@ def load_num_dev_res_units_data(db, year, job_type, year_flag):
 
 def load_community_district_data(db, boro, year_flag):
 
-    boro_dict = {'Manhattan': 1, "Bronx": 2, "Brooklyn": 3, "Queens": 4, "Staten Island": 5}
+    #boro_dict = {'Manhattan': 1, "Bronx": 2, "Brooklyn": 3, "Queens": 4, "Staten Island": 5}
 
     # connect 
     conn = create_engine(db)
@@ -57,11 +60,11 @@ def load_community_district_data(db, boro, year_flag):
     agg_db = pd.read_sql('''
     SELECT 
         {yf} AS year,
-        comunitydist AS cd, 
-        SUM(classa_net :: INTEGER) as num_net_units
+        comunitydist :: VARCHAR AS cd, 
+        SUM(classa_net :: NUMERIC) as num_net_units
     
     FROM   
-        final_devdb
+        export_devdb
 
     WHERE
         {yf} :: INTEGER >= 2010
@@ -71,7 +74,7 @@ def load_community_district_data(db, boro, year_flag):
     GROUP BY 
         {yf},
         comunitydist
-    '''.format(yf=year_flag, slct_boro=boro_dict[boro]), con = conn)
+    '''.format(yf=year_flag, slct_boro=boro), con = conn)
 
 
     agg_db.dropna(subset=['num_net_units'], inplace=True)
@@ -96,9 +99,9 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
         SUM(classa_hnyaff :: NUMERIC) as hny_units,
         (SUM(classa_net :: NUMERIC)  - SUM(classa_hnyaff :: NUMERIC)) as other_units,
         job_status,
-        boro
+        boro :: VARCHAR
 
-    FROM   final_devdb
+    FROM   export_devdb
 
     WHERE
         permit_year :: INTEGER >= 2014
@@ -225,7 +228,7 @@ def load_building_size_data(db):
         END as units_class
     
     FROM   
-        final_devdb
+        export_devdb
 
     WHERE
         complete_year::INTEGER >= 2010
@@ -278,7 +281,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             END as units_flag
         
         FROM   
-            final_devdb
+            export_devdb
 
         WHERE
             complete_year::INTEGER >= 2010
@@ -286,6 +289,8 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             job_type IN ({job_type})
             AND 
             classa_net::INTEGER <> 0
+            AND 
+            boro :: INTEGER IN ({boro})
 
         GROUP BY 
             complete_year,
@@ -293,7 +298,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
             END 
         
-        '''.format(year_start=year_start, year_end=year_end, job_type=job_type_str), con = conn)
+        '''.format(job_type=job_type_str, boro=boro), con = conn)
 
     else:
 
@@ -319,7 +324,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             END as units_flag
         
         FROM   
-            final_devdb
+            export_devdb
 
         WHERE
             complete_year::INTEGER BETWEEN {year_start} AND {year_end} 

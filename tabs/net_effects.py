@@ -13,7 +13,7 @@ def create_net_effects_tab(app):
 
             widgets = html.Div(
                         [
-                            html.P('Please use the options to select a borough to view'),                                
+                            html.P('Please use the options to select a borough to view its community district data'),                                
                             # boro selection 
                             dcc.RadioItems(
                                 id='net-effects-boro-radio',
@@ -41,7 +41,25 @@ def create_net_effects_tab(app):
 
         else:
 
-            widgets = html.P('')
+            widgets = html.Div(
+                [
+                    html.P('Choose a borough if want to see only the data for one borough'),
+                    dcc.RadioItems(
+                        id='net-effects-year-boro-radio',
+                        options=[
+                            {'label': 'All Boroughs', 'value': '1, 2, 3, 4, 5'},
+                            {'label': 'Manhattan', 'value': 1},
+                            {'label': 'Bronx', 'value': 2},
+                            {'label': 'Brooklyn', 'value': 3},
+                            {'label': 'Queens', 'value': 4},
+                            {'label': 'Staten Island', 'value': 5},
+                            
+                        ],
+                        value='1, 2, 3, 4, 5',
+                        #labelStyle={'display': 'inline-block'}
+                    )
+                ]
+            )
 
 
         return widgets
