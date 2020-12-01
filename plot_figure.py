@@ -98,34 +98,37 @@ def community_district_choropleth(agg_db, mapbox_token):
 ##########################
 def building_size_bar(df, job_type):
     
-    newbuild = df.loc[df.job_type == 'New Building']
+    #newbuild = df.loc[df.job_type == 'New Building']
 
-    demo = df.loc[df.job_type == 'Demolition']
-
+    #demo = df.loc[df.job_type == 'Demolition']
 
     fig = go.Figure()
 
-    if job_type == 'Demolition':
+    #if job_type == 'Demolition':
 
-        for uclass in demo.units_class.unique():
+        #demo.
 
-            fig.add_trace(
-                go.Bar(x=demo.loc[demo.units_class == uclass].year, 
-                    y=demo.loc[demo.units_class == uclass].net_residential_units, 
-                    name=uclass, 
-                )
+    for uclass in df.units_class.unique():
+
+        fig.add_trace(
+            go.Bar(
+                x=df.loc[df.units_class == uclass].year, 
+                y=df.loc[df.units_class == uclass].net_residential_units, 
+                name=uclass, 
             )
+        )
 
-    elif job_type == 'New Building':
+    #elif job_type == 'New Building':
 
-        for uclass in newbuild.units_class.unique():
+        #for uclass in newbuild.units_class.unique():
 
-            fig.add_trace(
-                go.Bar(x=newbuild.loc[newbuild.units_class == uclass].year, 
-                    y=newbuild.loc[newbuild.units_class == uclass].net_residential_units, 
-                    name=uclass, 
-                )
-            )
+            #fig.add_trace(
+            #    go.Bar(
+            #        x=newbuild.loc[newbuild.units_class == uclass].year, 
+            #        y=newbuild.loc[newbuild.units_class == uclass].net_residential_units, 
+            #        name=uclass, 
+            #    )
+            #)
     
     fig.update_layout(title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
         barmode='stack', xaxis_tickangle=-45)
@@ -137,30 +140,65 @@ def building_size_bar(df, job_type):
 # affordable tab
 ##########################
 
-def hny_chart(df, df_charct, percent_flag, status):
+def affordable_chart(df, df_char, percent_flag, char_flag):
+
+    if percent_flag == 'Percentage':
+
+        hover_temp = '<br><b> %{text} </b><br>' + '<i>Percentage</i>: %{y:.1%}<extra></extra>'
+
+        n = 6
+
+    else:
+
+        hover_temp = '<br><b> %{text} </b><br>' + '<i>Units Count</i>: %{y}<extra></extra>'
+
+        n = 5
 
     bar = go.Figure()
 
     bar.add_trace(
-        go.Bar(x=df.boro, y=df.other_units, name='Other Units')
+        go.Bar(
+            x=df.boro, 
+            y=df.other_units, 
+            name='Other Units',
+            text=['Other Units' for i in range(n)],
+            hovertemplate=hover_temp
+        )
     )
 
     bar.add_trace(
-        go.Bar(x=df.boro, y=df.hny_units, name='HNY Units')
+        go.Bar(
+            x=df.boro,
+            y=df.hny_units, 
+            name='HNY Units',
+            text=['HNY Units' for i in range(n)],
+            hovertemplate=hover_temp
+        )
     )
 
-    bar.update_layout(title='Residential Units and HNY Units in ' + status + ' Projects', 
+    bar.update_layout(title='Residential Units and HNY Units in 2015 or Later Projects', 
         barmode='stack', xaxis_tickangle=-45)
 
+    # hny graphics starts here
     hny_bar = go.Figure()
-
-    for col in df_charct.columns[:-1]:
+    
+    for col in df_char.columns[:-1]:
 
         hny_bar.add_trace(
-            go.Bar(x=df_charct.borough, y=df_charct[col], name=col)
+            go.Bar(
+                x=df_char.borough, 
+                y=df_char[col], 
+                name=col,
+                text=[col.replace('_', ' ') for i in range(n)],
+                hovertemplate=hover_temp
+            )
         )
 
-    hny_bar.update_layout(title='HNY Characteristics', 
+    hny_bar.update_layout(
+        hoverlabel_align = 'right',
+        title = "Set hover text with hovertemplate")
+
+    hny_bar.update_layout(title='HNY Characteristics: Affordable Units by ' + char_flag, 
         barmode='stack', xaxis_tickangle=-45)
 
     return bar, hny_bar

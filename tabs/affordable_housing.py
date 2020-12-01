@@ -21,30 +21,30 @@ def create_affordable_housing_tab():
                                             dcc.RadioItems(
                                                 id='affordable-percent-radio',
                                                 options=[
+                                                    {'label': 'Units', 'value': 'Units'},
                                                     {'label': 'Percentage', 'value': 'Percentage'},
-                                                    {'label': 'Units', 'value': 'Units'}
                                                 ],
                                                 value='Units',
                                                 labelStyle={'display': 'inline-block'}
                                             ),
-                                            html.H4('Housing Units Other vs. HNY'),
-                                            html.P('Use radio to select view units for complete or incomplete projects'),
-                                            dcc.RadioItems(
-                                                id='affordable-status-radio',
-                                                options=[
-                                                    {'label': 'Complete', 'value': 'Complete'},
-                                                    {'label': 'Incomplete', 'value': 'Incomplete'}
-                                                ],
-                                                value='Complete',
-                                                labelStyle={'display': 'inline-block'}
-                                            ),
+                                            #html.H4('Housing Units Other vs. HNY'),
+                                            #html.P('Use radio to select view units for complete or incomplete projects'),
+                                            #dcc.RadioItems(
+                                            #    id='affordable-status-radio',
+                                            #    options=[
+                                            #        {'label': 'Complete', 'value': 'Complete'},
+                                            #        {'label': 'Incomplete', 'value': 'Incomplete'}
+                                            #    ],
+                                            #    value='Complete',
+                                            #    labelStyle={'display': 'inline-block'}
+                                            #),
                                             html.H4('Housing New York Units Characteristics'),
                                             html.P(''),
                                             dcc.RadioItems(
-                                                id='affordable-charct-radio',
+                                                id='affordable-char-radio',
                                                 options=[
                                                     {'label': 'Affordable units by income level', 'value': 'Income Level'},
-                                                    {'label': 'Affordable units by number of bedrooms', 'value': 'Bedrooms'},
+                                                    {'label': 'Affordable units by number of bedrooms', 'value': 'Number of Bedrooms'},
                                                     {'label': 'Affordable units by rental/owner status', 'value': 'Owner Status'}
                                                 ],
                                                 value='Income Level',
@@ -61,7 +61,7 @@ def create_affordable_housing_tab():
                             html.Div(
                                 [
                                     dcc.Graph(id='affordable-bar'),
-                                    dcc.Graph(id='affordable-bar-hny-charct')
+                                    dcc.Graph(id='affordable-bar-hny-char')
                                 ]
                             )
                         )

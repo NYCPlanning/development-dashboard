@@ -24,7 +24,7 @@ from aggregate_data import load_net_effects_data
 from plot_figure import citywide_choropleth
 from plot_figure import community_district_choropleth
 from plot_figure import building_size_bar
-from plot_figure import hny_chart
+from plot_figure import affordable_chart
 from plot_figure import net_effects_chart
 
 
@@ -105,9 +105,10 @@ app.layout = html.Div([
 ])
 
 
-###########################
+##########################################
 # production and pipelines
-###########################
+##########################################
+
 @app.callback(Output('tab-content', 'children'), [Input('tab-selection', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
@@ -166,32 +167,40 @@ def update_community_district_graphic(tab_select, boro):
 ###############################
 # affordable
 ###############################
+
 @app.callback(
     [
         Output('affordable-bar', 'figure'), 
-        Output('affordable-bar-hny-charct', 'figure')
+        Output('affordable-bar-hny-char', 'figure')
     ],
     [
         Input('affordable-percent-radio', 'value'),
-        Input('affordable-status-radio', 'value'),
-        Input('affordable-charct-radio', 'value')
+        #Input('affordable-status-radio', 'value'),
+        Input('affordable-char-radio', 'value')
     ]
 )
-def update_affordable_graphic(percent_flag, status, charct_flag):
+def update_affordable_graphic(percent_flag, char_flag):
 
-    df, df_charct = load_affordable_data(database, percent_flag, status, charct_flag)
+    df_aff, df_char = load_affordable_data(database, percent_flag, char_flag)
 
-    bar, hny_bar = hny_chart(df, df_charct, percent_flag, status)
+    aff_bar, hny_bar = affordable_chart(df_aff, df_char, percent_flag, char_flag)
 
-    return bar, hny_bar
+    return aff_bar, hny_bar
 
 ###############################
 # building size
 ###############################
-@app.callback(Output('building-size-graphic', 'figure'), [Input('job-type-dropdown-2', 'value')])
-def update_building_size_graphic(job_type):
 
-    df = load_building_size_data(database)
+@app.callback(
+    Output('building-size-graphic', 'figure'), 
+[
+    Input('building-size-job-type-dropdown', 'value'),
+    Input('building-size-percent-radio', 'value')
+]
+)
+def update_building_size_graphic(job_type, percent_flag):
+
+    df = load_building_size_data(database, job_type, percent_flag)
 
     fig = building_size_bar(df, job_type)
 
@@ -201,6 +210,7 @@ def update_building_size_graphic(job_type):
 ###############################
 # net effects
 ###############################
+
 @app.callback(
     [
         Output('net-effects-boro-bar', 'figure'),

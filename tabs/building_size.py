@@ -18,13 +18,23 @@ def create_building_size_tab():
                                             html.H2('Control Panel'),
                                             html.P('Use radio to select view units for complete or incomplete projects'),
                                             dcc.Dropdown(
-                                                id="job-type-dropdown-2",
+                                                id="building-size-job-type-dropdown",
                                                 options=[{
                                                     'label': x,
                                                     'value': x
                                                     } for x in ['New Building', 'Demolition']
                                                 ],
                                                 value='New Building'
+                                            ),
+                                            html.P('Choose to view the charts in units or percentage'),
+                                            dcc.RadioItems(
+                                                id='building-size-percent-radio',
+                                                options=[
+                                                    {'label': 'Units', 'value': 'Units'},
+                                                    {'label': 'Percentage', 'value': 'Percentage'},
+                                                ],
+                                                value='Units',
+                                                labelStyle={'display': 'inline-block'}
                                             ),
                                         ]
                                     )

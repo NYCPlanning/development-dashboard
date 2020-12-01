@@ -87,7 +87,7 @@ def load_community_district_data(db, boro, year_flag):
 # affordable data
 ##########################
 
-def load_affordable_data(db, percent_flag, status, charct_flag):
+def load_affordable_data(db, percent_flag, char_flag):
 
     boro_dict = {'1': 'Manhattan', '2': "Bronx", '3': "Brooklyn", '4': "Queens", '5': "Staten Island"}
 
@@ -119,7 +119,7 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
     df_complete = hny_units.loc[hny_units.job_status == '5. Completed Construction']
 
     # charateristics of housing new york units to compile
-    if charct_flag == 'Income Level':
+    if char_flag == 'Income Level':
 
         attr_ls = ['extremely_low_income_units',
                     'very_low_income_units',
@@ -129,7 +129,7 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
                     'other_income_units'
                 ]
 
-        df_charct = pd.read_sql('''
+        df_char = pd.read_sql('''
 
         SELECT 
             SUM({0} :: INTEGER) as {0},
@@ -146,7 +146,7 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
             borough
         '''.format(attr_ls[0], attr_ls[1], attr_ls[2], attr_ls[3], attr_ls[4], attr_ls[5]), con= conn)
 
-    elif charct_flag == 'Bedrooms':
+    elif char_flag == 'Number of Bedrooms':
 
         attr_ls = ['studio_units',
                     '1_br_units',
@@ -158,7 +158,7 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
                     'unknown_br_units'
                     ]
 
-        df_charct = pd.read_sql('''
+        df_char = pd.read_sql('''
 
         SELECT 
             SUM({0} :: INTEGER) as {0},
@@ -180,7 +180,7 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
 
         attr_ls = ['counted_rental_units', 'counted_homeownership_units']
 
-        df_charct = pd.read_sql('''
+        df_char = pd.read_sql('''
 
         SELECT 
             SUM({0} :: INTEGER) as {0},
@@ -194,31 +194,39 @@ def load_affordable_data(db, percent_flag, status, charct_flag):
         '''.format(attr_ls[0], attr_ls[1]), con= conn)
     
     if percent_flag == 'Percentage':
+        
+        df_char.loc[5] = list(df_char.iloc[:, :-1].sum(axis=0)) + ['Citywide']
 
-        for i in range(5):
+        df_complete.loc[5] = list(df_complete.iloc[:, :-1].sum(axis=0)) + ['Citywide']
 
-            df_charct.iloc[i, :-1] = (df_charct.iloc[i, :-1] / df_charct.iloc[i, :-1].sum()) * 100
+        for i in range(6):
 
-            df_permit.iloc[i, :-2] = (df_permit.iloc[i, :-2] / df_permit.iloc[i, :-2].sum()) * 100
+            df_char.iloc[i, :-1] = (df_char.iloc[i, :-1] / df_char.iloc[i, :-1].sum())
 
-            df_complete.iloc[i, :-2] = (df_complete.iloc[i, :-2] / df_complete.iloc[i, :-2].sum()) * 100
+            #df_permit.iloc[i, :-2] = (df_permit.iloc[i, :-2] / df_permit.iloc[i, :-2].sum())
+
+            df_complete.iloc[i, :-2] = (df_complete.iloc[i, :-2] / df_complete.iloc[i, :-2].sum())
+        
+        #df_charct.loc[5] = df_charct.iloc[:, :-1].sum(axis=0) + ['Citywide']
+
+        #df_complete.iloc[5, :] = df_complete.iloc[:, :-1].sum(axis=0) + ['Citywide']
 
     #return df_permit if status == 'Incomplete' else df_complete, df_charct
-    return df_complete, df_charct
+    return df_complete, df_char
 
 ##########################
 # building size data 
 ##########################
 
-def load_building_size_data(db):
+def load_building_size_data(db, job_type, percent_flag):
 
     conn = create_engine(db)
    
-    agg_db = pd.read_sql('''
+    df = pd.read_sql('''
     SELECT 
         complete_year AS year,
         SUM(ABS(classa_net)) as net_residential_units,
-        job_type,
+        --- job_type,
         CASE WHEN ABS(classa_net) BETWEEN 1 AND 2 THEN '1 to 2 unit buildings'
         WHEN ABS(classa_net) between 3 and 5 THEN '3 to 5' 
         WHEN ABS(classa_net) between 6 and 10 THEN '6 to 10'
@@ -233,11 +241,11 @@ def load_building_size_data(db):
     WHERE
         complete_year::INTEGER >= 2010
         AND
-        job_type <> 'Alteration'
+        job_type = '{job_type}'
 
     GROUP BY 
         complete_year,
-        job_type,
+        --- job_type,
         CASE WHEN ABS(classa_net) BETWEEN 1 AND 2 THEN '1 to 2 unit buildings'
         WHEN ABS(classa_net) between 3 and 5 THEN '3 to 5' 
         WHEN ABS(classa_net) between 6 and 10 THEN '6 to 10'
@@ -245,9 +253,18 @@ def load_building_size_data(db):
         WHEN ABS(classa_net) between 26 and 100 THEN '26 to 100'
         WHEN ABS(classa_net) > 100 THEN '> 100'
         END
-    ''', con = conn)
+    '''.format(job_type=job_type), con = conn)
 
-    return agg_db
+    if percent_flag == 'Percentage':
+
+        for i in df.year.unique():
+
+            df.loc[df.year == i].loc[:, 'net_residential_units'] = df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum()
+
+    #print(df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum())
+    print(df.loc[df.year == 2010].net_residential_units / df.loc[df.year == 2010].net_residential_units.sum())
+
+    return df
 
 ##########################
 # Net Effects 
