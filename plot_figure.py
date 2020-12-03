@@ -84,7 +84,7 @@ def community_district_choropleth(agg_db, mapbox_token):
  
     # the bar chart graphic
     fig_bar = px.bar(agg_db, x='cd', y='num_net_units', color='year', barmode='stack', 
-        title='Number Units by Year and Community District', orientation='h')
+        title='Number Units by Year and Community District')
 
     fig_bar.update_layout(xaxis={"type":"category"})
 
@@ -96,11 +96,23 @@ def community_district_choropleth(agg_db, mapbox_token):
 ##########################
 # building size tab
 ##########################
-def building_size_bar(df, job_type):
+def building_size_bar(df, job_type, percent_flag):
     
     #newbuild = df.loc[df.job_type == 'New Building']
 
     #demo = df.loc[df.job_type == 'Demolition']
+
+    if percent_flag == 'Percentage':
+
+        hover_temp = '<br><b> %{text} </b><br>' + '<i>Percentage</i>: %{y:.1%}<extra></extra>'
+
+        n = 6
+
+    else:
+
+        hover_temp = '<br><b> %{text} </b><br>' + '<i>Units Count</i>: %{y}<extra></extra>'
+
+        n = 5
 
     fig = go.Figure()
 
@@ -115,6 +127,9 @@ def building_size_bar(df, job_type):
                 x=df.loc[df.units_class == uclass].year, 
                 y=df.loc[df.units_class == uclass].net_residential_units, 
                 name=uclass, 
+                text=[uclass for i in range(10)],
+                hovertemplate=hover_temp
+
             )
         )
 
@@ -258,7 +273,7 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis):
         # aggregate by community district 
         cd_choro = df.groupby('cd')['total_classa_net'].sum().reset_index()
 
-        choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.total_classa_net, featureidkey="properties.BoroCD")
+        choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.total_classa_net, featureidkey="properties.BoroCD",color_continuous_scale="Viridis",)
 
         choro.update_layout(
             title='Net Effects on Residential Units ' + job_type, 

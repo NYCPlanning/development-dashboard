@@ -7,7 +7,7 @@ import plotly.express as px
 import requests
 import pandas as pd
 import dash_bootstrap_components as dbc
-import dash_ui as dui 
+#import dash_ui as dui 
 from components.headers import create_headers
 import os
 # for local testing with .env file
@@ -202,7 +202,7 @@ def update_building_size_graphic(job_type, percent_flag):
 
     df = load_building_size_data(database, job_type, percent_flag)
 
-    fig = building_size_bar(df, job_type)
+    fig = building_size_bar(df, job_type, percent_flag)
 
     return fig
 
@@ -245,7 +245,6 @@ def update_net_effects_year_graphic(job_type, x_axis, boro):
     bar = net_effects_chart(df, mapbox_token, job_type, x_axis)
 
     return bar
-
 
 
 if __name__ == '__main__':

@@ -59,7 +59,7 @@ def load_community_district_data(db, boro, year_flag):
    
     agg_db = pd.read_sql('''
     SELECT 
-        {yf} AS year,
+        {yf} :: VARCHAR AS year,
         comunitydist :: VARCHAR AS cd, 
         SUM(classa_net :: NUMERIC) as num_net_units
     
@@ -257,12 +257,18 @@ def load_building_size_data(db, job_type, percent_flag):
 
     if percent_flag == 'Percentage':
 
-        for i in df.year.unique():
+        df_gb = df.groupby(['year', 'units_class']).agg({'net_residential_units': 'sum'})
 
-            df.loc[df.year == i].loc[:, 'net_residential_units'] = df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum()
+        df = df_gb.groupby(level=0).apply(lambda x: x / float(x.sum()))
+
+        df.reset_index(inplace=True)
+
+        #for i in df.year.unique():
+
+            #df.loc[df.year == i].loc[:, 'net_residential_units'] = df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum()
 
     #print(df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum())
-    print(df.loc[df.year == 2010].net_residential_units / df.loc[df.year == 2010].net_residential_units.sum())
+    #print(df)
 
     return df
 

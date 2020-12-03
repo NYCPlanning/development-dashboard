@@ -1,0 +1,10 @@
+dash==1.7.0
+dash-bootstrap-components==0.7.2
+dash-core-components==1.6.0
+dash-html-components==1.0.2
+dash-renderer==1.2.2
+dash-table==4.5.1
+pandas==1.0.1
+numpy==1.15.4
+requests==2.25.0
+sqlalchemy==1.13.20
