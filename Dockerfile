@@ -1,4 +1,4 @@
-FROM python:3.6.7-slim-stretch
+FROM python:3-slim as build
 
 WORKDIR /app
 
