@@ -8,3 +8,4 @@ pandas
 requests==2.25.0
 sqlalchemy
 plotly==4.13.0
+python-dotenv
