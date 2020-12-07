@@ -160,7 +160,7 @@ def update_community_district_graphic(tab_select, boro):
 
     df = load_community_district_data(database, boro, year_flag)
 
-    choro, bar, line = community_district_choropleth(df, mapbox_token)
+    choro, bar, line = community_district_choropleth(df, boro, mapbox_token)
 
     return choro, bar, line
 

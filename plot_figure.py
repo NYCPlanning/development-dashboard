@@ -65,7 +65,7 @@ def citywide_choropleth(df, mapbox_token, job_type, job_units, normalization):
     return fig
 
 
-def community_district_choropleth(agg_db, mapbox_token):
+def community_district_choropleth(agg_db, boro, mapbox_token):
 
     response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
     
@@ -74,9 +74,15 @@ def community_district_choropleth(agg_db, mapbox_token):
     # aggregate by community district 
     cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
 
-    fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
-    featureidkey="properties.BoroCD")
+    #fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    #featureidkey="properties.BoroCD")
 
+    fig = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=merged.bct2010, z=merged[normalization],
+                                colorscale=cs, reversescale=rs, zmin=params['min'], zmax=params['max'],
+                                marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCT2010"))
+
+
+    center_dict = {0: []}
     fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
                     mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 
