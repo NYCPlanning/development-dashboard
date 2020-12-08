@@ -77,12 +77,12 @@ def community_district_choropleth(agg_db, boro, mapbox_token):
     #fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
     #featureidkey="properties.BoroCD")
 
-    fig = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=merged.bct2010, z=merged[normalization],
-                                colorscale=cs, reversescale=rs, zmin=params['min'], zmax=params['max'],
-                                marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCT2010"))
+    fig_choro = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=cd_choro.cd, z=cd_choro.num_net_units,
+                                #colorscale=cs, reversescale=rs, zmin=params['min'], zmax=params['max'],
+                                marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCD"))
 
 
-    center_dict = {0: []}
+    #center_dict = {0: [], 1: (, )}
     fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
                     mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 

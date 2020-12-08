@@ -248,5 +248,6 @@ def update_net_effects_year_graphic(job_type, x_axis, boro):
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=5000, debug=False) 
+    #app.run_server(host='0.0.0.0', port=5000, debug=False) 
+    app.run_server(debug=True)
 
