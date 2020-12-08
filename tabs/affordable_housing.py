@@ -59,10 +59,11 @@ def create_affordable_housing_tab():
                         # this is the graphics
                         dbc.Col(
                             html.Div(
-                                [
-                                    dcc.Graph(id='affordable-bar'),
-                                    dcc.Graph(id='affordable-bar-hny-char')
-                                ]
+                                    [
+                                        dcc.Graph(id='affordable-bar'),
+                                        dcc.Graph(id='affordable-bar-hny-char')
+                                    ],
+                                    style={'width': '100%', 'float': 'Center', 'display': 'inline-block'}
                             )
                         )
                     ]
