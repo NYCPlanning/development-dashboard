@@ -74,11 +74,14 @@ def community_district_choropleth(agg_db, mapbox_token):
     # aggregate by community district 
     cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
 
-    fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    #fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    #featureidkey="properties.BoroCD")
+
+    fig_choro = px.choropleth(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
     featureidkey="properties.BoroCD")
 
-    fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
-                    mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
+    #fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
+    #                mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 
     fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
  
