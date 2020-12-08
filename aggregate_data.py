@@ -33,15 +33,6 @@ def load_citywide_data(db, job_type, year_flag, year_start, year_end):
         --- job_type, 
         bct2010
     '''.format(year_flag=year_flag, job_type=job_type, year_start=year_start, year_end=year_end), con = conn)
-
-    # the dataframe is either aggregated across all years for one job type or simply one year is selected
-    #if year == 'All Years':
-
-        #ftd_df = df.loc[(df.job_type == job_type)].groupby('bct2010')['total_classa_net'].agg('sum').reset_index()
-
-    #else:
-
-        #ftd_df = df.loc[(df.job_type == job_type) & (df.year == float(year))]
     
     return df
 
@@ -189,6 +180,11 @@ def load_affordable_data(db, percent_flag, char_flag):
 
         FROM hpd_hny_units_by_building
 
+        WHERE
+        RIGHT(project_completion_date :: varchar, 4) :: NUMERIC >= 2015
+        AND 
+
+
         GROUP BY
             borough
         '''.format(attr_ls[0], attr_ls[1]), con= conn)
@@ -203,15 +199,8 @@ def load_affordable_data(db, percent_flag, char_flag):
 
             df_char.iloc[i, :-1] = (df_char.iloc[i, :-1] / df_char.iloc[i, :-1].sum())
 
-            #df_permit.iloc[i, :-2] = (df_permit.iloc[i, :-2] / df_permit.iloc[i, :-2].sum())
-
             df_complete.iloc[i, :-2] = (df_complete.iloc[i, :-2] / df_complete.iloc[i, :-2].sum())
-        
-        #df_charct.loc[5] = df_charct.iloc[:, :-1].sum(axis=0) + ['Citywide']
 
-        #df_complete.iloc[5, :] = df_complete.iloc[:, :-1].sum(axis=0) + ['Citywide']
-
-    #return df_permit if status == 'Incomplete' else df_complete, df_charct
     return df_complete, df_char
 
 ##########################
@@ -262,13 +251,6 @@ def load_building_size_data(db, job_type, percent_flag):
         df = df_gb.groupby(level=0).apply(lambda x: x / float(x.sum()))
 
         df.reset_index(inplace=True)
-
-        #for i in df.year.unique():
-
-            #df.loc[df.year == i].loc[:, 'net_residential_units'] = df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum()
-
-    #print(df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum())
-    #print(df)
 
     return df
 

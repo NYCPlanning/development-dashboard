@@ -1,11 +1,9 @@
-dash==1.7.0
-dash-bootstrap-components==0.7.2
-dash-core-components==1.6.0
-dash-html-components==1.0.2
-dash-renderer==1.2.2
-dash-table==4.5.1
+dash==1.18.0
+dash-bootstrap-components==0.10.7
+dash-core-components==1.13.0
+dash-html-components==1.1.1
 pandas
-requests==2.25.0
+requests
 sqlalchemy
 plotly==4.13.0
 python-dotenv
