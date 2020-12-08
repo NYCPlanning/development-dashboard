@@ -83,6 +83,7 @@ def community_district_choropleth(agg_db, mapbox_token):
     #fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
     #                mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
 
+    fig_choro.update_geos(fitbounds="locations", visible=False)
     fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
  
     # the bar chart graphic
