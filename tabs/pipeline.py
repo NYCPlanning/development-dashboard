@@ -16,17 +16,6 @@ def create_pipeline_tab(app):
 
             widgets = html.Div(
                         [
-                            html.P('Please use the options to select one job type to view'),                                
-                            dcc.Dropdown(
-                                id="pp-citywide-job-type-dropdown",
-                                options=[
-                                    {'label': 'All Job Types', 'value': "'New Building', 'Demolition', 'Alteration'"},
-                                    {'label': 'New Building', 'value': "'New Building'"},
-                                    {'label': 'Demolition', 'value': "'Demolition'"},
-                                    {'label': 'Alteration', 'value': "'Alteration'"}                          
-                                ],
-                                value="'New Building', 'Demolition', 'Alteration'"
-                            ),
                             html.P('View by number of jobs or residential units'),
                             dcc.RadioItems(
                                 id='pp-citywide-jobs-units-radio',
@@ -66,8 +55,14 @@ def create_pipeline_tab(app):
                     html.P('Please use the dropdown below to select a borough to view'),
                     dcc.Dropdown(
                         id='pp-cd-boro-dropdown',
-                        options=[{'label': k, 'value': k} for k in boro_options],
-                        value='Manhattan'
+                        options=[
+                            {'label': 'Manhattan', 'value': 1},
+                            {'label': 'Bronx', 'value': 2},
+                            {'label': 'Brooklyn', 'value': 3},
+                            {'label': 'Queens', 'value': 4},
+                            {'label': 'Staten Island', 'value': 5},
+                        ],
+                        value=1
                     )
                 ], 
                 style={'width': '70%', 'float': 'Center', 'display': 'inline-block'}
@@ -75,7 +70,7 @@ def create_pipeline_tab(app):
 
         return widgets
 
-    @app.callback(Output('pipeline-content', 'children'), [Input('citywide-dropdown', 'value')])
+    @app.callback(Output('pipeline-content', 'children'), [Input('pp-citywide-dropdown', 'value')])
     def create_pipeline_content(citywide_toggle):
 
         if citywide_toggle == 'Citywide':
@@ -93,11 +88,6 @@ def create_pipeline_tab(app):
                         ]
                     ),
                     dcc.Graph(id='pp-cd-line')
-                    #dbc.Row(
-                        #[
-                        #    dcc.Graph(id='cd-line-chart')
-                        #]
-                    #)
                 ]
             )
         
@@ -115,6 +105,17 @@ def create_pipeline_tab(app):
                                     html.Div(
                                         [
                                             html.H2('Control Panel'),
+                                            html.P('Please use the options to select one job type to view'),                                
+                                            dcc.Dropdown(
+                                                id="pp-job-type-dropdown",
+                                                options=[
+                                                    {'label': 'All Job Types', 'value': "'New Building', 'Demolition', 'Alteration'"},
+                                                    {'label': 'New Building', 'value': "'New Building'"},
+                                                    {'label': 'Demolition', 'value': "'Demolition'"},
+                                                    {'label': 'Alteration', 'value': "'Alteration'"}                          
+                                                ],
+                                                value="'New Building', 'Demolition', 'Alteration'"
+                                            ),
                                             html.P('Choose Citywide view or Borough View'),
                                             dcc.Dropdown(
                                                 id="pp-citywide-dropdown",

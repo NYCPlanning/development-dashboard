@@ -70,9 +70,7 @@ def community_district_choropleth(agg_db, job_type, boro, mapbox_token):
     # aggregate by community district 
     cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
 
-    #fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
-    #featureidkey="properties.BoroCD")
-    # 
+    # params
     if job_type == "'Demolition'":
         cs = 'Reds'
         rs = True
@@ -83,8 +81,8 @@ def community_district_choropleth(agg_db, job_type, boro, mapbox_token):
         cs = 'Bluered'
         rs = None
 
-    fig_choro = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=cd_choro.cd, z=cd_choro.num_net_units, #colorscale='Greens',
-                                colorscale=cs, reversescale=rs, #zmin=params['min'], zmax=params['max'],
+    fig_choro = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=cd_choro.cd, z=cd_choro.num_net_units, 
+                                colorscale=cs, reversescale=rs,
                                 marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCD"))
 
     # lat long for different borough  

@@ -48,8 +48,6 @@ def create_cumulative_production_tab(app):
 
         elif citywide_toggle == 'Boroughs':
 
-            #boro_options = ['Manhattan', 'Bronx', 'Brooklyn', 'Queens', 'Staten Island']
-
             widgets = html.Div(
                 [
                     html.P('Please use the dropdown below to select a borough to view'),

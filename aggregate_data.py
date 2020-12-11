@@ -185,6 +185,7 @@ def load_affordable_data(db, percent_flag, char_flag):
         WHERE
         RIGHT(project_completion_date :: varchar, 4) :: NUMERIC >= 2015
         AND 
+        reporting_construction_type = 'New Construction'
 
 
         GROUP BY
