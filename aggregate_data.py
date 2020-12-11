@@ -135,6 +135,11 @@ def load_affordable_data(db, percent_flag, char_flag):
 
         FROM hpd_hny_units_by_building
 
+        WHERE
+        RIGHT(project_completion_date :: varchar, 4) :: NUMERIC >= 2015 
+        AND 
+        reporting_construction_type = 'New Construction'
+
         GROUP BY
             borough
         '''.format(attr_ls[0], attr_ls[1], attr_ls[2], attr_ls[3], attr_ls[4], attr_ls[5]), con= conn)
@@ -165,6 +170,11 @@ def load_affordable_data(db, percent_flag, char_flag):
 
         FROM hpd_hny_units_by_building
 
+        WHERE
+        RIGHT(project_completion_date :: varchar, 4) :: NUMERIC >= 2015 
+        AND 
+        reporting_construction_type = 'New Construction'
+
         GROUP BY
             borough
         '''.format(attr_ls[0], attr_ls[1], attr_ls[2], attr_ls[3], attr_ls[4], attr_ls[5], attr_ls[6]), con=conn)
@@ -186,7 +196,6 @@ def load_affordable_data(db, percent_flag, char_flag):
         RIGHT(project_completion_date :: varchar, 4) :: NUMERIC >= 2015
         AND 
         reporting_construction_type = 'New Construction'
-
 
         GROUP BY
             borough

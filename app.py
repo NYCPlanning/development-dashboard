@@ -11,7 +11,7 @@ import dash_bootstrap_components as dbc
 from components.headers import create_headers
 import os
 # for local testing with .env file
-#from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 
 from aggregate_data import load_community_district_data
