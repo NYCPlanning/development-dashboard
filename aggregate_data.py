@@ -2,7 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 ##########################
-# boro level management
+# city level management
 ##########################
 
 def load_citywide_data(db, job_type, year_flag, year_start, year_end):
@@ -33,26 +33,15 @@ def load_citywide_data(db, job_type, year_flag, year_start, year_end):
         --- job_type, 
         bct2010
     '''.format(year_flag=year_flag, job_type=job_type, year_start=year_start, year_end=year_end), con = conn)
-
-    # the dataframe is either aggregated across all years for one job type or simply one year is selected
-    #if year == 'All Years':
-
-        #ftd_df = df.loc[(df.job_type == job_type)].groupby('bct2010')['total_classa_net'].agg('sum').reset_index()
-
-    #else:
-
-        #ftd_df = df.loc[(df.job_type == job_type) & (df.year == float(year))]
     
     return df
 
 
 ##########################
-# boro level management
+# boro level view
 ##########################
 
-def load_community_district_data(db, boro, year_flag):
-
-    #boro_dict = {'Manhattan': 1, "Bronx": 2, "Brooklyn": 3, "Queens": 4, "Staten Island": 5}
+def load_community_district_data(db, job_type, boro, year_flag):
 
     # connect 
     conn = create_engine(db)
@@ -70,11 +59,15 @@ def load_community_district_data(db, boro, year_flag):
         {yf} :: INTEGER >= 2010
         AND 
         boro::INTEGER = {slct_boro}
+        AND
+        job_inactive IS NULL
+        AND
+        job_type IN ({job_type})
 
     GROUP BY 
         {yf},
         comunitydist
-    '''.format(yf=year_flag, slct_boro=boro), con = conn)
+    '''.format(yf=year_flag, slct_boro=boro, job_type=job_type), con = conn)
 
 
     agg_db.dropna(subset=['num_net_units'], inplace=True)
@@ -263,13 +256,6 @@ def load_building_size_data(db, job_type, percent_flag):
 
         df.reset_index(inplace=True)
 
-        #for i in df.year.unique():
-
-            #df.loc[df.year == i].loc[:, 'net_residential_units'] = df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum()
-
-    #print(df.loc[df.year == i].net_residential_units / df.loc[df.year == i].net_residential_units.sum())
-    #print(df)
-
     return df
 
 ##########################
@@ -355,8 +341,6 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             job_type IN ({job_type})
             AND 
             classa_net::INTEGER <> 0
-            AND 
-            boro :: INTEGER = {boro}
             AND 
             (LEFT(comunitydist :: varchar, 1) :: INTEGER) = {boro}
             AND 

@@ -51,10 +51,6 @@ def citywide_choropleth(df, mapbox_token, job_type, job_units, normalization):
         cs = 'Bluered'
         rs = None
 
-
-    #ig = px.choropleth_mapbox(merged, geojson=geojson, locations='bct2010', color=merged.units_per_acre, 
-    #    hover_data=['acreage', 'total_res_units_net'], featureidkey="properties.BoroCT2010")
-
     fig = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=merged.bct2010, z=merged[normalization],
                                     colorscale=cs, reversescale=rs, zmin=params['min'], zmax=params['max'],
                                     marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCT2010"))
@@ -65,7 +61,7 @@ def citywide_choropleth(df, mapbox_token, job_type, job_units, normalization):
     return fig
 
 
-def community_district_choropleth(agg_db, mapbox_token):
+def community_district_choropleth(agg_db, job_type, boro, mapbox_token):
 
     response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
     
@@ -74,11 +70,39 @@ def community_district_choropleth(agg_db, mapbox_token):
     # aggregate by community district 
     cd_choro = agg_db.groupby('cd')['num_net_units'].sum().reset_index()
 
-    fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
-    featureidkey="properties.BoroCD")
+    #fig_choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.num_net_units,
+    #featureidkey="properties.BoroCD")
+    # 
+    if job_type == "'Demolition'":
+        cs = 'Reds'
+        rs = True
+    elif job_type == "'New Building'":
+        cs = 'Blues'
+        rs = False
+    else:
+        cs = 'Bluered'
+        rs = None
 
-    fig_choro.update_layout(mapbox_accesstoken=mapbox_token, mapbox_style="carto-positron",
-                    mapbox_zoom=10, mapbox_center = {"lat": 40.7831, "lon": -73.9712})
+    fig_choro = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=cd_choro.cd, z=cd_choro.num_net_units, #colorscale='Greens',
+                                colorscale=cs, reversescale=rs, #zmin=params['min'], zmax=params['max'],
+                                marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCD"))
+
+    # lat long for different borough  
+    center_dict = {
+        1: (40.7831, -73.9712), 
+        2: (40.8448, -73.8648), 
+        3: (40.6782, -73.9442), 
+        4: (40.7282, -73.7949), 
+        5: (40.5795, -74.1502)
+    }
+
+
+    fig_choro.update_layout(
+        mapbox_accesstoken=mapbox_token, 
+        mapbox_style="carto-positron",
+        mapbox_zoom=10, 
+        mapbox_center = {"lat": center_dict[boro][0], "lon": center_dict[boro][1]}
+    )
 
     fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
  
@@ -97,28 +121,19 @@ def community_district_choropleth(agg_db, mapbox_token):
 # building size tab
 ##########################
 def building_size_bar(df, job_type, percent_flag):
-    
-    #newbuild = df.loc[df.job_type == 'New Building']
 
-    #demo = df.loc[df.job_type == 'Demolition']
-
+    # percentage or units count 
     if percent_flag == 'Percentage':
 
         hover_temp = '<br><b> %{text} </b><br>' + '<i>Percentage</i>: %{y:.1%}<extra></extra>'
-
-        n = 6
 
     else:
 
         hover_temp = '<br><b> %{text} </b><br>' + '<i>Units Count</i>: %{y}<extra></extra>'
 
-        n = 5
 
+    # set the figure 
     fig = go.Figure()
-
-    #if job_type == 'Demolition':
-
-        #demo.
 
     for uclass in df.units_class.unique():
 
@@ -132,21 +147,14 @@ def building_size_bar(df, job_type, percent_flag):
 
             )
         )
-
-    #elif job_type == 'New Building':
-
-        #for uclass in newbuild.units_class.unique():
-
-            #fig.add_trace(
-            #    go.Bar(
-            #        x=newbuild.loc[newbuild.units_class == uclass].year, 
-            #        y=newbuild.loc[newbuild.units_class == uclass].net_residential_units, 
-            #        name=uclass, 
-            #    )
-            #)
     
-    fig.update_layout(title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
-        barmode='stack', xaxis_tickangle=-45)
+    fig.update_layout(
+        title=job_type + ' Completed Residential Units by Number of Units in Buildings', 
+        #legend_traceorder=['1 to 2 unit buildings', '3 to 5', '6 to 10', '11 to 25', '26 to 100', '> 100'],
+        # https://community.plotly.com/t/customizing-the-order-of-legends/12668 no ability to sort the at the moment
+        barmode='stack', 
+        xaxis_tickangle=-45
+    )
 
     return fig
 
@@ -222,7 +230,7 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
 # net effects tab
 ##########################
 
-def net_effects_chart(df, mapbox_token, job_type, x_axis):
+def net_effects_chart(df, mapbox_token, job_type, x_axis, boro):
 
     if x_axis == 'By Year':
 
@@ -236,8 +244,6 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis):
             )
 
         net_table = df.groupby('year').total_classa_net.sum().reset_index()
-
-        #bar.update_traces(texttemplate='%{text:.2}', textposition='outside')
 
         bar.add_trace(
             go.Scatter(x=net_table.year, y=net_table.total_classa_net, mode='markers', name='net units outcome', textposition='top center')
@@ -260,12 +266,14 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis):
 
         net_table = df.groupby('cd').total_classa_net.sum().reset_index()
 
+        #print(net_table)
+
         bar.add_trace(go.Scatter(x=net_table.total_classa_net, y=net_table.cd, mode='markers', name='net units outcome'))
 
         bar.update_layout(title='Net Effects on Residential Units ' + job_type, 
             barmode='relative', xaxis_tickangle=-45)
         
-
+        # choropleth
         response = requests.get('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson')
         
         geojson = response.json()
@@ -273,14 +281,34 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis):
         # aggregate by community district 
         cd_choro = df.groupby('cd')['total_classa_net'].sum().reset_index()
 
-        choro = px.choropleth_mapbox(cd_choro, geojson=geojson, locations='cd', color=cd_choro.total_classa_net, featureidkey="properties.BoroCD",color_continuous_scale="Viridis",)
 
-        choro.update_layout(
-            title='Net Effects on Residential Units ' + job_type, 
+        print(cd_choro)
+
+        print(cd_choro.dtypes)
+
+        #choro = go.Figure()
+
+        fig_choro = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=cd_choro.cd, z=cd_choro.total_classa_net,
+                            colorscale='Greens',
+                            marker_opacity=1.0, marker_line_width=0, featureidkey="properties.BoroCD"))
+
+        # lat long for different borough  
+        center_dict = {
+            1: (40.7831, -73.9712), 
+            2: (40.8448, -73.8648), 
+            3: (40.6782, -73.9442), 
+            4: (40.7282, -73.7949), 
+            5: (40.5795, -74.1502)
+        }
+
+
+        fig_choro.update_layout(
             mapbox_accesstoken=mapbox_token, 
             mapbox_style="carto-positron",
-            mapbox_zoom=9, 
-            mapbox_center = {"lat": 40.730610, "lon": -73.935242}
+            mapbox_zoom=10, 
+            mapbox_center = {"lat": center_dict[boro][0], "lon": center_dict[boro][1]}
         )
 
-        return bar, choro
+        fig_choro.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+        return bar, fig_choro

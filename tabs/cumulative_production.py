@@ -15,18 +15,7 @@ def create_cumulative_production_tab(app):
         if citywide_toggle == 'Citywide':
 
             widgets = html.Div(
-                        [
-                            html.P('Please use the options to select one job type to view'),                                
-                            dcc.Dropdown(
-                                id="pp-citywide-job-type-dropdown",
-                                options=[
-                                    {'label': 'All Job Types', 'value': "'New Building', 'Demolition', 'Alteration'"},
-                                    {'label': 'New Building', 'value': "'New Building'"},
-                                    {'label': 'Demolition', 'value': "'Demolition'"},
-                                    {'label': 'Alteration', 'value': "'Alteration'"}                          
-                                ],
-                                value="'New Building', 'Demolition', 'Alteration'"
-                            ),
+                        [                              
                             html.P('View by number of jobs or residential units'),
                             dcc.RadioItems(
                                 id='pp-citywide-jobs-units-radio',
@@ -116,6 +105,16 @@ def create_cumulative_production_tab(app):
                                     html.Div(
                                         [
                                             html.H2('Control Panel'),
+                                            dcc.Dropdown(
+                                                id="pp-job-type-dropdown",
+                                                options=[
+                                                    {'label': 'All Job Types', 'value': "'New Building', 'Demolition', 'Alteration'"},
+                                                    {'label': 'New Building', 'value': "'New Building'"},
+                                                    {'label': 'Demolition', 'value': "'Demolition'"},
+                                                    {'label': 'Alteration', 'value': "'Alteration'"}                          
+                                                ],
+                                                value="'New Building', 'Demolition', 'Alteration'"
+                                            ),
                                             html.P('Choose Citywide view or Borough View'),
                                             dcc.Dropdown(
                                                 id="pp-citywide-dropdown",
