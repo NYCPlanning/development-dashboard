@@ -46,8 +46,6 @@ database = os.environ.get("BUILD_ENGINE", "")
 
 mapbox_token = os.environ.get("MAPBOX_TOKEN", "")
 
-
-
 # app dash 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -134,7 +132,7 @@ def render_content(tab):
     Output('pp-citywide-choro', 'figure'),
     [
         Input('tab-selection', 'value'),
-        Input('pp-citywide-job-type-dropdown', 'value'), 
+        Input('pp-job-type-dropdown', 'value'), 
         Input('pp-citywide-year-range-slider', 'value'),
         Input('pp-citywide-jobs-units-radio', 'value'),
         Input('pp-citywide-normalization-radio', 'value')
@@ -158,16 +156,17 @@ def update_citywide_graphic(tab_select, job_type, year, job_units, normalization
     ],
     [
         Input('tab-selection', 'value'),
+        Input('pp-job-type-dropdown', 'value'), 
         Input('pp-cd-boro-dropdown', 'value')
     ]
 )
-def update_community_district_graphic(tab_select, boro):
+def update_community_district_graphic(tab_select, job_type, boro):
 
     year_flag = 'complete_year' if tab_select == 'tab-cumulative' else 'permit_year'
 
-    df = load_community_district_data(database, boro, year_flag)
+    df = load_community_district_data(database, job_type, boro, year_flag)
 
-    choro, bar, line = community_district_choropleth(df, mapbox_token)
+    choro, bar, line = community_district_choropleth(df, job_type, boro, mapbox_token)
 
     return choro, bar, line
 
@@ -234,10 +233,11 @@ def update_net_effects_boro_graphic(job_type, x_axis, boro, year):
 
     df = load_net_effects_data(database, job_type, x_axis, boro, year[0], year[1])
 
-    bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis)
+    bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
 
     return bar, choro
 
+# year option
 @app.callback(Output('net-effects-year-bar', 'figure'),
     [
         Input('net-effects-job-type-dropdown', 'value'),
@@ -255,6 +255,7 @@ def update_net_effects_year_graphic(job_type, x_axis, boro):
 
 
 if __name__ == '__main__':
+    
     app.run_server(host='0.0.0.0', port=5000, debug=False) 
     #app.run_server(debug=True)
 
