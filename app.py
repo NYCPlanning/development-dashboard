@@ -11,7 +11,7 @@ import dash_bootstrap_components as dbc
 from components.headers import create_headers
 import os
 # for local testing with .env file
-from dotenv import load_dotenv, find_dotenv
+#from dotenv import load_dotenv, find_dotenv
 
 
 from aggregate_data import load_community_district_data
@@ -35,16 +35,16 @@ from tabs.net_effects import create_net_effects_tab
 from tabs.pipeline import create_pipeline_tab
 
 # get the enviromental variable in local testing 
-load_dotenv(find_dotenv())
+#load_dotenv(find_dotenv())
 
-database = os.getenv('BUILD_ENGINE')
+#database = os.getenv('BUILD_ENGINE')
 
-mapbox_token = os.getenv('MAPBOX_TOKEN')
+#mapbox_token = os.getenv('MAPBOX_TOKEN')
 
 # use this when load environment variables from server
-#database = os.environ.get("BUILD_ENGINE", "")
+database = os.environ.get("BUILD_ENGINE", "")
 
-#mapbox_token = os.environ.get("MAPBOX_TOKEN", "")
+mapbox_token = os.environ.get("MAPBOX_TOKEN", "")
 
 # app dash 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -256,6 +256,6 @@ def update_net_effects_year_graphic(job_type, x_axis, boro):
 
 if __name__ == '__main__':
     
-    #app.run_server(host='0.0.0.0', port=5000, debug=False) 
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', port=5000, debug=False) 
+    #app.run_server(debug=True)
 
