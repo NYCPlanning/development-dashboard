@@ -86,11 +86,9 @@ def create_net_effects_tab(app):
                     dbc.Row(
                         [
                             dbc.Col(
-                                # the bar chart 
                                 dcc.Graph(id='net-effects-boro-choro')
                             ),
                             dbc.Col(
-                                # also add a map
                                 dcc.Graph(id='net-effects-boro-bar')
                             )
                         ]
