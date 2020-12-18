@@ -226,19 +226,24 @@ def update_building_size_graphic(job_type, percent_flag):
         Input('net-effects-job-type-dropdown', 'value'),
         Input('net-effects-x-dropdown', 'value'),
         Input('net-effects-boro-radio', 'value'),
+        Input('net-effects-geometries', 'value'),
         Input('net-effects-year-slider', 'value')
     ]
 )
-def update_net_effects_boro_graphic(job_type, x_axis, boro, year):
+def update_net_effects_boro_graphic(job_type, x_axis, boro, geometry, year):
 
-    df = load_net_effects_data(database, job_type, x_axis, boro, year[0], year[1])
+    df = load_net_effects_data(database, job_type, x_axis, boro, geometry, year[0], year[1])
 
-    bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
+    bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis, boro, geometry=geometry)
 
     return bar, choro
 
 # year option
-@app.callback(Output('net-effects-year-bar', 'figure'),
+@app.callback(
+    [
+        Output('net-effects-year-bar', 'figure'),
+        Output('net-effects-zd-bar', 'figure')
+    ],
     [
         Input('net-effects-job-type-dropdown', 'value'),
         Input('net-effects-x-dropdown', 'value'),
@@ -247,11 +252,11 @@ def update_net_effects_boro_graphic(job_type, x_axis, boro, year):
 )
 def update_net_effects_year_graphic(job_type, x_axis, boro):
 
-    df = load_net_effects_data(database, job_type, x_axis, boro)
+    df, df_zd = load_net_effects_data(database, job_type, x_axis, boro)
     
-    bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
+    boro_bar, zd_bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=df_zd)
 
-    return bar
+    return boro_bar, zd_bar
 
 
 if __name__ == '__main__':

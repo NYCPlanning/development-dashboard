@@ -27,6 +27,15 @@ def create_net_effects_tab(app):
                                 value=1,
                                 labelStyle={'display': 'inline-block'}
                             ),  
+                            html.P('Please select the geometries to join the'),
+                            dcc.Dropdown(
+                                id='net-effects-geometries',
+                                options=[
+                                    {'label': 'Community District', 'value': 'comunitydist'},
+                                    {'label': 'Census Tract', 'value': 'bct2010'}
+                                ],
+                                value='comunitydist'
+                            ),
                             html.P('Use the slider to select a year or the range of years'),
                             dcc.RangeSlider(
                                 id='net-effects-year-slider',
@@ -67,12 +76,12 @@ def create_net_effects_tab(app):
     @app.callback(Output('net-effects-content', 'children'), [Input('net-effects-x-dropdown', 'value')])
     def create_net_effects_content(x_dropdown):
 
-        if x_dropdown == 'By Year':
+        if x_dropdown == 'Citywide':
 
             content = html.Div(
                 [
                     dcc.Graph(id='net-effects-year-bar'),
-                    #dcc.Graph(id='net-effects-table')
+                    dcc.Graph(id='net-effects-zd-bar')
                 ]
             )
             
@@ -121,13 +130,13 @@ def create_net_effects_tab(app):
                                                 ],
                                                 value='Alteration Only'
                                             ),
-                                            html.P('View by Year or by Boroughs'),
+                                            html.P('View Citywide or by Boroughs'),
                                             dcc.Dropdown(
                                                 id='net-effects-x-dropdown',
                                                 options=[{
                                                     'label': x,
                                                     'value': x
-                                                    } for x in ['By Year', 'By Borough']
+                                                    } for x in ['Citywide', 'By Borough']
                                                 ],
                                                 value='By Borough'
                                             ),

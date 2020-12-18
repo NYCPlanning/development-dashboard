@@ -12,7 +12,6 @@ def load_citywide_data(db, job_type, year_flag, year_start, year_end):
     # what are the year 
     df = pd.read_sql('''
     SELECT 
-        --- {year_flag} as year,
         coalesce(COUNT(*), 0) as total_num_jobs,
         SUM(classa_net :: NUMERIC) as total_classa_net,
         bct2010 :: VARCHAR
@@ -29,8 +28,6 @@ def load_citywide_data(db, job_type, year_flag, year_start, year_end):
 
 
     GROUP  BY
-        --- {year_flag},
-        --- job_type, 
         bct2010
     '''.format(year_flag=year_flag, job_type=job_type, year_start=year_start, year_end=year_end), con = conn)
     
@@ -270,11 +267,11 @@ def load_building_size_data(db, job_type, percent_flag):
 # Net Effects 
 ##########################
 
-def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None, year_end=None):
+def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, year_start=None, year_end=None):
 
     conn = create_engine(database)
 
-    if x_axis == 'By Year':
+    if x_axis == 'Citywide':
 
         if job_type == 'New Building and Demolition':
 
@@ -288,7 +285,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
 
             job_type_str = "'New Building', 'Demolition', 'Alteration'"
 
-        agg_db = pd.read_sql('''
+        df = pd.read_sql('''
 
         SELECT 
             complete_year AS year,
@@ -315,7 +312,42 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
             END 
         
-        '''.format(job_type=job_type_str, boro=boro), con = conn)
+        '''.format(boro=boro, job_type=job_type_str ), con = conn)
+
+        #print(df)
+
+        df_zd = pd.read_sql('''
+
+        SELECT 
+            SUM(export_devdb.classa_net) as net_units,
+            zoning_typology_map.typology_2020_03 as typo,
+            zoning_typology_map.typ2020_03_Num as typo_num,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END as units_flag
+
+
+        FROM   export_devdb LEFT JOIN zoning_typology_map ON export_devdb.zoningdist1 = zoning_typology_map.zonedist1
+
+        WHERE 
+            job_inactive IS NULL
+            AND 
+            boro :: NUMERIC IN ({boro})
+            AND 
+            complete_year :: NUMERIC >= 2010
+            AND
+            job_type IN ({job_type})
+
+        GROUP BY
+            zoning_typology_map.typology_2020_03,
+            zoning_typology_map.typ2020_03_Num,
+            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
+            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
+            END
+
+        '''.format(boro=boro, job_type=job_type_str), con = conn)
+
+        return df, df_zd
 
     else:
 
@@ -335,7 +367,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
 
         SELECT 
             SUM(classa_net) as total_classa_net,
-            comunitydist :: varchar AS cd,
+            {geometry} :: varchar AS {geometry},
             CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
             WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
             END as units_flag
@@ -350,16 +382,16 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, year_start=None
             AND 
             classa_net::INTEGER <> 0
             AND 
-            (LEFT(comunitydist :: varchar, 1) :: INTEGER) = {boro}
+            (LEFT({geometry} :: varchar, 1) :: INTEGER) = {boro}
             AND 
             job_inactive IS NULL
 
         GROUP BY 
-            comunitydist,
+            {geometry},
             CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
             WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
             END 
         
-        '''.format(year_start=year_start, year_end=year_end, boro=boro, job_type=job_type_str), con = conn)
+        '''.format(year_start=year_start, year_end=year_end, boro=boro, job_type=job_type_str, geometry=geometry), con = conn)
 
-    return agg_db
+        return agg_db
