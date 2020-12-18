@@ -324,7 +324,7 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=None, geom
                 y=net_table[geometry], 
                 mode='markers', 
                 name='net units outcome',
-                text=df.loc[df.units_flag == flag].total_classa_net,
+                text=net_table.total_classa_net,
                 hovertemplate='<br><b>Community District %{y} </b><br>' + '<i>Net Units</i>: %{text}<extra></extra>'
             )
         )
