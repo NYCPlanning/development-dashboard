@@ -134,16 +134,21 @@ def building_size_bar(df, job_type, percent_flag):
     # set the figure 
     fig = go.Figure()
 
-    for uclass in df.units_class.unique():
+    print(df.units_class.unique())
+
+    uclass = ['1 to 2 unit buildings', '3 to 5','6 to 10','11 to 25' , '26 to 100', '> 100' , None]
+
+    uclass.reverse()
+
+    for uc in uclass:
 
         fig.add_trace(
             go.Bar(
-                x=df.loc[df.units_class == uclass].year, 
-                y=df.loc[df.units_class == uclass].net_residential_units, 
-                name=uclass, 
-                text=[uclass for i in range(10)],
+                x=df.loc[df.units_class == uc].year, 
+                y=df.loc[df.units_class == uc].net_residential_units, 
+                name=uc, 
+                text=[uc for i in range(11)],
                 hovertemplate=hover_temp
-
             )
         )
     
@@ -152,7 +157,9 @@ def building_size_bar(df, job_type, percent_flag):
         #legend_traceorder=['1 to 2 unit buildings', '3 to 5', '6 to 10', '11 to 25', '26 to 100', '> 100'],
         # https://community.plotly.com/t/customizing-the-order-of-legends/12668 no ability to sort the at the moment
         barmode='stack', 
-        xaxis_tickangle=-45
+        xaxis_tickangle=-45,
+        # this could only works with keywords such as group/reverse/
+        #legend={'traceorder': }
     )
 
     return fig
@@ -201,8 +208,14 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
     bar.update_layout(title='Residential Units and HNY Units in 2015 or Later Projects', 
         barmode='stack', xaxis_tickangle=-45)
 
-    # hny graphics starts here
+    # hny characteristics graphics starts here
     hny_bar = go.Figure()
+
+    #charct_ls = df_char.columns[:-1]
+
+    #print(charct_ls)
+
+
     
     for col in df_char.columns[:-1]:
 
@@ -210,7 +223,7 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
             go.Bar(
                 x=df_char.borough, 
                 y=df_char[col], 
-                name=col,
+                name=col.replace('_', ' '),
                 text=[col.replace('_', ' ') for i in range(n)],
                 hovertemplate=hover_temp
             )
@@ -310,7 +323,7 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=None, geom
                     name=flag.replace('_', ' '),
                     text=df.loc[df.units_flag == flag].total_classa_net,
                     textposition='outside',
-                    hovertemplate='<br><b>Community District %{y} </b><br>' + '<i>{flag}</i>: <extra></extra>'.format(flag=flag.replace('_', ' '))
+                    hoverinfo='skip'
                 )
             )
 

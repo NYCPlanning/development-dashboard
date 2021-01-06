@@ -21,11 +21,11 @@ from aggregate_data import load_citywide_data
 from aggregate_data import load_net_effects_data
 
 
-from plot_figure import citywide_choropleth
-from plot_figure import community_district_choropleth
-from plot_figure import building_size_bar
-from plot_figure import affordable_chart
-from plot_figure import net_effects_chart
+from plot_figure.plot_product_pipeline import citywide_choropleth
+from plot_figure.plot_product_pipeline import community_district_choropleth
+from plot_figure.plot_building_size import building_size_bar
+from plot_figure.plot_affordable import affordable_chart
+from plot_figure.plot_net_effects import net_effects_chart
 
 
 from tabs.cumulative_production import create_cumulative_production_tab
@@ -109,11 +109,6 @@ app.layout = html.Div([
     html.Div(id='tab-content')
 ])
 
-
-##########################################
-# production and pipelines
-##########################################
-
 @app.callback(Output('tab-content', 'children'), [Input('tab-selection', 'value')])
 def render_content(tab):
     if tab == 'tab-cumulative':
@@ -127,6 +122,9 @@ def render_content(tab):
     elif tab == 'tab-net-effects':
         return net_effects_tab
 
+##########################################
+# production and pipelines
+##########################################
 
 @app.callback(
     Output('pp-citywide-choro', 'figure'),
