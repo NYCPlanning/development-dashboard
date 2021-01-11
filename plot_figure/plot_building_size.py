@@ -24,7 +24,7 @@ def building_size_bar(df, job_type, percent_flag):
 
     print(df.units_class.unique())
 
-    uclass = ['1 to 2 unit buildings', '3 to 5','6 to 10','11 to 25' , '26 to 100', '> 100' , None]
+    uclass = ['1 to 2 units', '3 to 5 units','6 to 10 units','11 to 25 units' , '26 to 100 units', '> 100 units' , None]
 
     uclass.reverse()
 

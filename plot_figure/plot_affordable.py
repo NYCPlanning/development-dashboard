@@ -28,8 +28,8 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
         go.Bar(
             x=df.boro, 
             y=df.other_units, 
-            name='Other Units',
-            text=['Other Units' for i in range(n)],
+            name='Non-HNY Units',
+            text=['Non-HNY Units' for i in range(n)],
             hovertemplate=hover_temp
         )
     )
@@ -55,7 +55,7 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
     #print(charct_ls)
 
 
-    
+    #df_char = ['Manhattan', 'Bronx', 'Brooklyn', 'Queens', 'Staten Island']
     for col in df_char.columns[:-1]:
 
         hny_bar.add_trace(
@@ -68,11 +68,10 @@ def affordable_chart(df, df_char, percent_flag, char_flag):
             )
         )
 
-    hny_bar.update_layout(
-        hoverlabel_align = 'right',
-        title = "Set hover text with hovertemplate")
-
     hny_bar.update_layout(title='HNY Characteristics: Affordable Units by ' + char_flag, 
+        hoverlabel_align = 'right',
         barmode='stack', xaxis_tickangle=-45)
+
+    hny_bar.update_xaxes(categoryorder='array', categoryarray= ['Manhattan', 'Bronx', 'Brooklyn', 'Queens', 'Staten Island'])
 
     return bar, hny_bar

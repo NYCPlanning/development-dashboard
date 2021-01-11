@@ -42,8 +42,56 @@ def create_building_size_tab():
                             ),
                             width={"size": 4}
                         ),
-                        # this is the graphics
-                        dbc.Col(dcc.Graph(id='building-size-graphic'))
+                        # this is the summary statistics and graphics
+                        dbc.Col(
+                            [                            
+                                dbc.Row(
+                                    [
+                                        dbc.Col(
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [
+                                                        html.H2(id='building-size-median', className='card-title'),
+                                                        html.P('Median Number of Units Per Building', className='card-text')
+                                                    ]
+                                                ),
+                                                color='success', inverse=True
+                                            ),
+                                            width='auto'
+                                        ),
+                                        dbc.Col(
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [                                                    
+                                                        html.H2(id='building-size-mean', className='card-title'),
+                                                        html.P('Average Number of Units Per Building', className='card-text')
+                                                    ]
+                                                ),
+                                                color='success', inverse=True
+                                            ),
+                                            width='auto'
+                                        ),
+                                        dbc.Col(
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [                                                    
+                                                        html.H2('Something else', className='card-title'),
+                                                        html.P('something else', className='card-text')
+                                                    ]
+                                                ),
+                                                color='success', inverse=True
+                                            ),
+                                            width='auto'
+                                        )
+                                    ]
+                                ),
+                                dbc.Row(
+                                    dbc.Col(
+                                        dcc.Graph(id='building-size-graphic'),
+                                    )
+                                )
+                            ]
+                        )
                     ]
                 )
             ]

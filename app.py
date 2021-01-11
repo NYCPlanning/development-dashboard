@@ -15,8 +15,8 @@ from dotenv import load_dotenv, find_dotenv
 
 
 from aggregate_data import load_community_district_data
-from aggregate_data import load_affordable_data
-from aggregate_data import load_building_size_data
+from agg_functions.agg_affordable import load_affordable_data
+from agg_functions.agg_building_size import load_building_size_data
 from aggregate_data import load_citywide_data
 from aggregate_data import load_net_effects_data
 
@@ -195,8 +195,13 @@ def update_affordable_graphic(percent_flag, char_flag):
 # building size
 ###############################
 
+
 @app.callback(
-    Output('building-size-graphic', 'figure'), 
+[
+    Output('building-size-median', 'children'),
+    Output('building-size-mean', 'children'),
+    Output('building-size-graphic', 'figure')
+],     
 [
     Input('building-size-job-type-dropdown', 'value'),
     Input('building-size-percent-radio', 'value')
@@ -204,11 +209,15 @@ def update_affordable_graphic(percent_flag, char_flag):
 )
 def update_building_size_graphic(job_type, percent_flag):
 
-    df = load_building_size_data(database, job_type, percent_flag)
+    df, stats = load_building_size_data(database, job_type, percent_flag)
+
+    median = stats.classa_net.median()
+
+    mean = stats.classa_net.mean()
 
     fig = building_size_bar(df, job_type, percent_flag)
 
-    return fig
+    return median, mean, fig
 
 
 ###############################
@@ -260,5 +269,7 @@ def update_net_effects_year_graphic(job_type, x_axis, boro):
 if __name__ == '__main__':
     
     app.run_server(host='0.0.0.0', port=5000, debug=False) 
+
+    # use this for local development and debugging
     #app.run_server(debug=True)
 
