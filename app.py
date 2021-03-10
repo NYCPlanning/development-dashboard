@@ -340,8 +340,8 @@ def update_historical_district_graphic(boro, percent_flag, net_flag, norm_flag):
 
 if __name__ == '__main__':
     
-    #app.run_server(host='0.0.0.0', port=5000, debug= False) 
+    app.run_server(host='0.0.0.0', port=5000, debug= False) 
 
     # use this for local development and debugging
-    app.run_server(debug=True)
+    # app.run_server(debug=True)
 
