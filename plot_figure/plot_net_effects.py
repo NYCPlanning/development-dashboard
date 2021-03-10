@@ -3,7 +3,8 @@ import requests
 import pandas as pd
 from pandas import json_normalize
 import plotly.graph_objects as go
-
+import dash_html_components as html
+import dash_table
 
 def net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=None, geometry=None):
 
@@ -38,41 +39,12 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=None, geom
         bar.update_layout(title='Net Effects on Residential Units ' + job_type, 
             barmode='relative', xaxis_tickangle=-45)
 
-        # zoning district net effects
-        zd_bar = go.Figure()
 
-        for flag in df.units_flag.unique():
-
-            zd_bar.add_trace(
-                go.Bar(
-                    x=df_zd.loc[df_zd.units_flag == flag].typo,
-                    y=df_zd.loc[df_zd.units_flag == flag].net_units,
-                    name=flag.replace('_', ' '),
-                    text=df_zd.loc[df_zd.units_flag == flag].net_units, 
-                    textposition='outside',
-                    hoverinfo='skip'
-                )
-            )
-
-        net_table_zd = df_zd.groupby('typo').net_units.sum().reset_index()
-
-        zd_bar.add_trace(
-            go.Scatter(
-                x=net_table_zd.typo, 
-                y=net_table_zd.net_units, 
-                mode='markers', 
-                name='net units outcome', 
-                textposition='top center',
-                hovertemplate='<br><b> %{x} </b><br>' + '<i>Net Units</i>: %{y} <extra></extra>'
-            )
-        )
-
-        zd_bar.update_layout(title='Net Effects by Zoning District Typology ' + job_type, 
-            barmode='relative', xaxis_tickangle=-45)
-
-        return bar, zd_bar
+        return bar
     
     else:
+
+        #print(df)
 
         bar = go.Figure()
 
@@ -162,3 +134,19 @@ def net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=None, geom
         )
 
         return bar, fig_choro
+
+def net_effects_table(df):
+
+    dt = html.Div([
+        dash_table.DataTable(
+        #id="net-effects-boro",
+        columns=[{"name": i, "id": i} for i in df.columns],
+        data=df.to_dict("records"),
+        export_format="csv",
+        style_cell=dict(textAlign='left'),
+        style_header=dict(backgroundColor="paleturquoise"),
+        style_data=dict(backgroundColor="lavender")
+        )
+    ])
+
+    return dt 

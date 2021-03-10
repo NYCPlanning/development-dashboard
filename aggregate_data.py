@@ -316,38 +316,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
 
         #print(df)
 
-        df_zd = pd.read_sql('''
-
-        SELECT 
-            SUM(export_devdb.classa_net) as net_units,
-            zoning_typology_map.typology_2020_03 as typo,
-            zoning_typology_map.typ2020_03_Num as typo_num,
-            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
-            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
-            END as units_flag
-
-
-        FROM   export_devdb LEFT JOIN zoning_typology_map ON export_devdb.zoningdist1 = zoning_typology_map.zonedist1
-
-        WHERE 
-            job_inactive IS NULL
-            AND 
-            boro :: NUMERIC IN ({boro})
-            AND 
-            complete_year :: NUMERIC >= 2010
-            AND
-            job_type IN ({job_type})
-
-        GROUP BY
-            zoning_typology_map.typology_2020_03,
-            zoning_typology_map.typ2020_03_Num,
-            CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
-            WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
-            END
-
-        '''.format(boro=boro, job_type=job_type_str), con = conn)
-
-        return df, df_zd
+        return df
 
     else:
 

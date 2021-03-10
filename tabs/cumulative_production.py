@@ -22,7 +22,7 @@ def create_cumulative_production_tab(app):
                                 options=[
                                     {'label': 'View by Residential Units', 'value': 'total_classa_net'},
                                     {'label': 'View by Number of Jobs', 'value': 'total_num_jobs'}
-                                ],
+                                ], 
                                 value='total_classa_net'
                             ),
                             html.P('To View Units Normalized Acreage or Unnormalized'),
@@ -94,7 +94,7 @@ def create_cumulative_production_tab(app):
     tab = dbc.Card(
         dbc.CardBody(
             [   
-                dbc.Row(
+                dbc.Row(  
                     [
                         # this is the control panel 
                         dbc.Col(
@@ -132,6 +132,9 @@ def create_cumulative_production_tab(app):
                             width={"size": 4}
                         ),
                         # this is the graphics
+                        # high level statistics suggestions: 
+                        # 1) total units citywide after the filtering for years and job types etc. 
+                        # 2) 
                         dbc.Col(html.Div(id='cumulative-content'))
                     ]
                 ),

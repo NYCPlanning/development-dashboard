@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
+import dash_table
 
 def create_net_effects_tab(app):
 
@@ -52,9 +53,9 @@ def create_net_effects_tab(app):
 
             widgets = html.Div(
                 [
-                    html.P('Choose a borough if want to see only the data for one borough'),
+                    html.P('Choose a borough if want to see only the data for one borough'), 
                     dcc.RadioItems(
-                        id='net-effects-year-boro-radio',
+                        id='net-effects-citywide-boro-radio',
                         options=[
                             {'label': 'All Boroughs', 'value': '1, 2, 3, 4, 5'},
                             {'label': 'Manhattan', 'value': 1},
@@ -80,8 +81,8 @@ def create_net_effects_tab(app):
 
             content = html.Div(
                 [
-                    dcc.Graph(id='net-effects-year-bar'),
-                    dcc.Graph(id='net-effects-zd-bar')
+                    dcc.Graph(id='net-effects-citywide-bar'),
+                    #dcc.Graph(id='net-effects-zd-bar')
                 ]
             )
             
@@ -101,6 +102,15 @@ def create_net_effects_tab(app):
                                 dcc.Graph(id='net-effects-boro-bar')
                             )
                         ]
+                    ),
+                    dbc.Row(
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.Div(id='net-effects-boro-datatable')
+                                ]
+                            )
+                        )
                     )
                 ], 
                 style={'width': '100%', 'float': 'Center', 'display': 'inline-block'}
@@ -138,7 +148,7 @@ def create_net_effects_tab(app):
                                                     'value': x
                                                     } for x in ['Citywide', 'By Borough']
                                                 ],
-                                                value='By Borough'
+                                                value='Citywide'
                                             ),
                                             html.Div(id='net-effects-control')
                                         ]

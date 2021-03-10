@@ -72,16 +72,16 @@ def create_building_size_tab():
                                             width='auto'
                                         ),
                                         dbc.Col(
-                                            dbc.Card(
-                                                dbc.CardBody(
-                                                    [                                                    
-                                                        html.H2('Something else', className='card-title'),
-                                                        html.P('something else', className='card-text')
-                                                    ]
-                                                ),
-                                                color='success', inverse=True
-                                            ),
-                                            width='auto'
+                                            #dbc.Card(
+                                                #dbc.CardBody(
+                                                    #[                                                    
+                                                        #html.H2('Something else', className='card-title'),
+                                                        #html.P('something else', className='card-text')
+                                                    #]
+                                                #),
+                                                #color='success', inverse=True
+                                            #),
+                                            #width='auto'
                                         )
                                     ]
                                 ),

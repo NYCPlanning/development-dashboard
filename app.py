@@ -18,14 +18,19 @@ from aggregate_data import load_community_district_data
 from agg_functions.agg_affordable import load_affordable_data
 from agg_functions.agg_building_size import load_building_size_data
 from aggregate_data import load_citywide_data
-from aggregate_data import load_net_effects_data
+#from aggregate_data import load_net_effects_data
+from agg_functions.agg_zoning_district import load_zoning_district_data
+from agg_functions.agg_historical_district import load_historical_district_data
+from agg_functions.agg_net_effects import load_net_effects_data
 
 
 from plot_figure.plot_product_pipeline import citywide_choropleth
 from plot_figure.plot_product_pipeline import community_district_choropleth
 from plot_figure.plot_building_size import building_size_bar
 from plot_figure.plot_affordable import affordable_chart
-from plot_figure.plot_net_effects import net_effects_chart
+from plot_figure.plot_net_effects import net_effects_chart, net_effects_table
+from plot_figure.plot_historical import historical_chart
+from plot_figure.plot_zoning_district import zoning_district_chart
 
 
 from tabs.cumulative_production import create_cumulative_production_tab
@@ -33,6 +38,8 @@ from tabs.affordable_housing import create_affordable_housing_tab
 from tabs.building_size import create_building_size_tab
 from tabs.net_effects import create_net_effects_tab
 from tabs.pipeline import create_pipeline_tab
+from tabs.zoning_district import create_zoning_district_tab
+from tabs.historical_district import create_historical_district_tab
 
 # get the enviromental variable in local testing 
 #load_dotenv(find_dotenv())
@@ -75,6 +82,10 @@ building_size_tab = create_building_size_tab()
 
 net_effects_tab = create_net_effects_tab(app)
 
+zoning_tab = create_zoning_district_tab()
+
+historical_tab = create_historical_district_tab()
+
 #################### 
 # dcc tabs 
 ####################
@@ -104,7 +115,9 @@ app.layout = html.Div([
         dcc.Tab(label='Pipeline', value='tab-pipeline', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Affordable Housing', value='tab-affordable', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Building Size', value='tab-size', style=tab_style, selected_style=tab_selected_style),
-        dcc.Tab(label='Net Effects', value='tab-net-effects', style=tab_style, selected_style=tab_selected_style)
+        dcc.Tab(label='Net Effects', value='tab-net-effects', style=tab_style, selected_style=tab_selected_style),
+        dcc.Tab(label='Zoning District', value='tab-zoning-district', style=tab_style, selected_style=tab_selected_style),
+        dcc.Tab(label='Historical District', value='tab-historical-district', style=tab_style, selected_style=tab_selected_style)
     ], style=tabs_styles),
     html.Div(id='tab-content')
 ])
@@ -121,6 +134,10 @@ def render_content(tab):
         return building_size_tab
     elif tab == 'tab-net-effects':
         return net_effects_tab
+    elif tab == 'tab-zoning-district':
+        return zoning_tab
+    elif tab == 'tab-historical-district':
+        return historical_tab
 
 ##########################################
 # production and pipelines
@@ -227,7 +244,8 @@ def update_building_size_graphic(job_type, percent_flag):
 @app.callback(
     [
         Output('net-effects-boro-bar', 'figure'),
-        Output('net-effects-boro-choro', 'figure')
+        Output('net-effects-boro-choro', 'figure'),
+        Output('net-effects-boro-datatable', 'children')
     ],
     [
         Input('net-effects-job-type-dropdown', 'value'),
@@ -243,33 +261,87 @@ def update_net_effects_boro_graphic(job_type, x_axis, boro, geometry, year):
 
     bar, choro = net_effects_chart(df, mapbox_token, job_type, x_axis, boro, geometry=geometry)
 
-    return bar, choro
+    dt = net_effects_table(df)
+
+    return bar, choro, dt
 
 # year option
 @app.callback(
-    [
-        Output('net-effects-year-bar', 'figure'),
-        Output('net-effects-zd-bar', 'figure')
-    ],
+        Output('net-effects-citywide-bar', 'figure'),
+        #Output('net-effects-zd-bar', 'figure')
     [
         Input('net-effects-job-type-dropdown', 'value'),
         Input('net-effects-x-dropdown', 'value'),
-        Input('net-effects-year-boro-radio', 'value')
+        Input('net-effects-citywide-boro-radio', 'value')
     ]
 )
-def update_net_effects_year_graphic(job_type, x_axis, boro):
+def update_net_effects_citywide_graphic(job_type, x_axis, boro):
 
-    df, df_zd = load_net_effects_data(database, job_type, x_axis, boro)
+    df = load_net_effects_data(database, job_type, x_axis, boro)
     
-    boro_bar, zd_bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro, df_zd=df_zd)
+    boro_bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
 
-    return boro_bar, zd_bar
+    return boro_bar
+
+#####################
+# zoning district 
+######################
+
+@app.callback(
+    [
+        Output('zoning-district-units-bar', 'figure'),
+        Output('zoning-district-land-area-bar', 'figure'),
+        #Output('zoning-district-reference-map', 'figure')
+    ],
+    [
+        Input('zoning-district-boro-radio', 'value'),
+        Input('zoning-district-percent-radio', 'value'),
+        Input('zoning-district-net-only-radio', 'value'),
+        Input('zoning-district-normalization-radio', 'value')
+    ]
+)
+def update_zoning_district_graphic(boro, percent_flag, net_flag, norm_flag):
+
+    df = load_zoning_district_data(database, boro, percent_flag, net_flag, norm_flag)
+
+    #print(df)
+    
+    bar_units, bar_land_area = zoning_district_chart(df, norm_flag)
+
+    return bar_units, bar_land_area#, ref_map, 
+
+#####################
+# historical district
+######################
+
+
+@app.callback(
+    [
+        Output('historical-units-bar', 'figure'),
+        Output('historical-land-area-bar', 'figure')
+    ],
+    [
+        Input('historical-district-boro-radio', 'value'),
+        Input('historical-district-percent-radio', 'value'),
+        Input('historical-district-net-only-radio', 'value'),
+        Input('historical-district-normalization-radio', 'value')
+    ]
+)
+def update_historical_district_graphic(boro, percent_flag, net_flag, norm_flag):
+
+    df = load_historical_district_data(database, boro, percent_flag, net_flag, norm_flag)
+
+    #print(df)
+    
+    bar_units, bar_land_area = historical_chart(df, norm_flag)
+
+    return bar_units, bar_land_area
 
 
 if __name__ == '__main__':
     
-    app.run_server(host='0.0.0.0', port=5000, debug=False) 
+    #app.run_server(host='0.0.0.0', port=5000, debug= False) 
 
     # use this for local development and debugging
-    #app.run_server(debug=True)
+    app.run_server(debug=True)
 
