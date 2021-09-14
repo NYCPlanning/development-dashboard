@@ -17,7 +17,7 @@ def load_historical_district_data(database, boro, percent_flag, net_flag, norm_f
         ELSE 'hist'
         END AS hist_flag
 
-        FROM   dcp_mappluto AS pluto LEFT OUTER JOIN export_devdb AS devdb ON pluto.bbl = devdb.bbl 
+        FROM   dcp_mappluto AS pluto LEFT OUTER JOIN old_export_devdb AS devdb ON pluto.bbl = devdb.bbl 
         LEFT JOIN zoning_typology_map AS typology ON devdb.zoningdist1 = typology.zonedist1
 
         WHERE 

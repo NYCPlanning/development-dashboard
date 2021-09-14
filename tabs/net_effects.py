@@ -98,10 +98,13 @@ def create_net_effects_tab(app):
                             dbc.Col(
                                 dcc.Graph(id='net-effects-boro-choro')
                             ),
-                            dbc.Col(
-                                dcc.Graph(id='net-effects-boro-bar')
-                            )
+                            #dbc.Col(
+                            #    dcc.Graph(id='net-effects-boro-bar')
+                            #)
                         ]
+                    ),
+                    dbc.Row(
+                        dcc.Graph(id='net-effects-boro-bar')
                     ),
                     dbc.Row(
                         dbc.Card(

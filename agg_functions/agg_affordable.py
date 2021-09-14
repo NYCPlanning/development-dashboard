@@ -19,7 +19,7 @@ def load_affordable_data(db, percent_flag, char_flag):
         job_status,
         boro :: VARCHAR
 
-    FROM   export_devdb
+    FROM   old_export_devdb
 
     WHERE
         permit_year :: INTEGER >= 2014

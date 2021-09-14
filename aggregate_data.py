@@ -16,7 +16,7 @@ def load_citywide_data(db, job_type, year_flag, year_start, year_end):
         SUM(classa_net :: NUMERIC) as total_classa_net,
         bct2010 :: VARCHAR
         
-    FROM   export_devdb
+    FROM   old_export_devdb
 
     WHERE
         {year_flag} :: NUMERIC BETWEEN {year_start} AND {year_end} 
@@ -50,7 +50,7 @@ def load_community_district_data(db, job_type, boro, year_flag):
         SUM(classa_net :: NUMERIC) as num_net_units
     
     FROM   
-        export_devdb
+        old_export_devdb
 
     WHERE
         {yf} :: INTEGER >= 2010
@@ -91,7 +91,7 @@ def load_affordable_data(db, percent_flag, char_flag):
         job_status,
         boro :: VARCHAR
 
-    FROM   export_devdb
+    FROM   old_export_devdb
 
     WHERE
         permit_year :: INTEGER >= 2014
@@ -234,7 +234,7 @@ def load_building_size_data(db, job_type, percent_flag):
         END as units_class
     
     FROM   
-        export_devdb
+        old_export_devdb
 
     WHERE
         complete_year::INTEGER >= 2010
@@ -295,7 +295,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
             END as units_flag
         
         FROM   
-            export_devdb
+            old_export_devdb
 
         WHERE
             complete_year::INTEGER >= 2010
@@ -342,7 +342,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
             END as units_flag
         
         FROM   
-            export_devdb
+            old_export_devdb
 
         WHERE
             complete_year::INTEGER BETWEEN {year_start} AND {year_end} 

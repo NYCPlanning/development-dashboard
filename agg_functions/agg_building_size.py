@@ -14,7 +14,7 @@ def load_building_size_data(db, job_type, percent_flag):
         classa_net
 
     FROM 
-        export_devdb
+        old_export_devdb
 
     WHERE
         complete_year::INTEGER >= 2010
@@ -37,7 +37,7 @@ def load_building_size_data(db, job_type, percent_flag):
         END as units_class
     
     FROM   
-        export_devdb
+        old_export_devdb
 
     WHERE
         complete_year::INTEGER >= 2010

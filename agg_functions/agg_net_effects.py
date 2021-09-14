@@ -33,7 +33,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
             END as units_flag
         
         FROM   
-            export_devdb
+            old_export_devdb
 
         WHERE
             complete_year::INTEGER >= 2010
@@ -80,7 +80,7 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
             END as units_flag
         
         FROM   
-            export_devdb
+            old_export_devdb
 
         WHERE
             complete_year::INTEGER BETWEEN {year_start} AND {year_end} 

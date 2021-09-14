@@ -10,15 +10,15 @@ def load_zoning_district_data(database, boro, percent_flag, net_flag, norm_flag)
     SELECT 
         SUM(devdb.classa_net) as net_units,
         ROUND(SUM(pluto.lotarea) / 43560) as total_lot_area,
-        typology.typ_2020_03_value as typo_value,
-        typology.typ_2020_03_name as typo,
+        typology.typo_wwl_value as typo_value,
+        typology.typo_wwl as typo,
         CASE 
         WHEN devdb.classa_net::INTEGER < 0 THEN 'units_loss' 
         WHEN devdb.classa_net::INTEGER > 0 THEN 'units_gain' 
         END as units_flag
 
 
-        FROM   dcp_mappluto AS pluto LEFT OUTER JOIN export_devdb AS devdb ON pluto.bbl = devdb.bbl 
+        FROM   dcp_mappluto AS pluto LEFT OUTER JOIN old_export_devdb AS devdb ON pluto.bbl = devdb.bbl 
         LEFT JOIN zoning_typology_map AS typology ON devdb.zoningdist1 = typology.zonedist1
 
     WHERE 
@@ -29,8 +29,8 @@ def load_zoning_district_data(database, boro, percent_flag, net_flag, norm_flag)
         complete_year :: NUMERIC >= 2010
 
     GROUP BY
-        typology.typ_2020_03_value,
-        typology.typ_2020_03_name,
+        typology.typo_wwl_value,
+        typology.typo_wwl,
         CASE WHEN classa_net::INTEGER < 0 THEN 'units_loss' 
         WHEN classa_net::INTEGER > 0 THEN 'units_gain' 
         END
@@ -43,7 +43,7 @@ def load_zoning_district_data(database, boro, percent_flag, net_flag, norm_flag)
     pluto.bbl,
     pluto.zonedist1,
     pluto.residfar,
-    typology.typ_2020_03_name as typo,
+    typology.typo_wwl as typo,
     pluto.wkb_geometry
 
     FROM   dcp_mappluto AS pluto LEFT JOIN zoning_typology_map AS typology ON pluto.zonedist1 = typology.zonedist1

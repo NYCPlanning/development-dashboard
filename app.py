@@ -42,16 +42,16 @@ from tabs.zoning_district import create_zoning_district_tab
 from tabs.historical_district import create_historical_district_tab
 
 # get the enviromental variable in local testing 
-#load_dotenv(find_dotenv())
+load_dotenv(find_dotenv())
 
-#database = os.getenv('BUILD_ENGINE')
+database = os.getenv('BUILD_ENGINE')
 
-#mapbox_token = os.getenv('MAPBOX_TOKEN')
+mapbox_token = os.getenv('MAPBOX_TOKEN')
 
 # use this when load environment variables from server
-database = os.environ.get("BUILD_ENGINE", "")
+#database = os.environ.get("BUILD_ENGINE", "")
 
-mapbox_token = os.environ.get("MAPBOX_TOKEN", "")
+#mapbox_token = os.environ.get("MAPBOX_TOKEN", "")
 
 # app dash 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -340,8 +340,8 @@ def update_historical_district_graphic(boro, percent_flag, net_flag, norm_flag):
 
 if __name__ == '__main__':
     
-    app.run_server(host='0.0.0.0', port=5000, debug= False) 
+    #app.run_server(host='0.0.0.0', port=5000, debug=False) 
 
     # use this for local development and debugging
-    # app.run_server(debug=True)
+    app.run_server(debug=True)
 
