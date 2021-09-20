@@ -240,6 +240,23 @@ def update_building_size_graphic(job_type, percent_flag):
 ###############################
 # net effects
 ###############################
+# year option
+@app.callback(
+        Output('net-effects-citywide-bar', 'figure'),
+        #Output('net-effects-zd-bar', 'figure')
+    [
+        Input('net-effects-job-type-dropdown', 'value'),
+        Input('net-effects-x-dropdown', 'value'),
+        Input('net-effects-citywide-boro-radio', 'value')
+    ]
+)
+def update_net_effects_citywide_graphic(job_type, x_axis, boro):
+
+    df = load_net_effects_data(database, job_type, x_axis, boro)
+    
+    boro_bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
+
+    return boro_bar
 
 @app.callback(
     [
@@ -265,23 +282,15 @@ def update_net_effects_boro_graphic(job_type, x_axis, boro, geometry, year):
 
     return bar, choro, dt
 
-# year option
 @app.callback(
-        Output('net-effects-citywide-bar', 'figure'),
-        #Output('net-effects-zd-bar', 'figure')
-    [
-        Input('net-effects-job-type-dropdown', 'value'),
-        Input('net-effects-x-dropdown', 'value'),
-        Input('net-effects-citywide-boro-radio', 'value')
-    ]
+    Output('net-effects-census-pie', 'figure'),
+    [Input('net-effects-boro-choro', 'selected-value')]
 )
-def update_net_effects_citywide_graphic(job_type, x_axis, boro):
+def update_net_effects_boro_graphic(select_geom):
 
-    df = load_net_effects_data(database, job_type, x_axis, boro)
-    
-    boro_bar = net_effects_chart(df, mapbox_token, job_type, x_axis, boro)
+    pie = census_chart(select_geom)
 
-    return boro_bar
+    return pie
 
 #####################
 # zoning district 

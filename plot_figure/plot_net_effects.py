@@ -150,3 +150,11 @@ def net_effects_table(df):
     ])
 
     return dt 
+
+def census_chart(df, select_geom):
+
+    = df.loc[]
+
+    
+
+    return 

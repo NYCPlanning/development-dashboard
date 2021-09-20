@@ -363,4 +363,6 @@ def load_net_effects_data(database, job_type, x_axis, boro=None, geometry=None, 
         
         '''.format(year_start=year_start, year_end=year_end, boro=boro, job_type=job_type_str, geometry=geometry), con = conn)
 
-        return agg_db
+        census_data = pd.read_excel('C:\Users\T_Du\Workspace\KPDB\study\censusnyc_decennialcensusdata_2020_2010_change.xlsx', sheet_name='2020 and 2010 Data', header=2)
+
+        return agg_db, census_data
